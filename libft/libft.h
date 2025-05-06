@@ -1,0 +1,1 @@
+char	*ft_stradd_char(char *str, char c); 
