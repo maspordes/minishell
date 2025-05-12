@@ -15,10 +15,17 @@
 /* env 命令的实现 */
 int	ft_env(t_env *env_list)
 {
+	// Set stdout to line buffered mode for pipe operations
+	setvbuf(stdout, NULL, _IOLBF, 0);
+
 	while (env_list)
 	{
 		if (env_list->value)
+		{
+			// Ensure consistent format: KEY=VALUE\n
 			printf("%s=%s\n", env_list->key, env_list->value);
+			fflush(stdout);  // Ensure output is flushed for pipe operations
+		}
 		env_list = env_list->next;
 	}
 	return (0);

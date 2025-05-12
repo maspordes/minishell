@@ -73,37 +73,6 @@ static int	create_pipes(t_cmd *cmd_list)
 	return (1);
 }
 
-/* 关闭所有管道 */
-static void	close_pipes(t_cmd *cmd_list)
-{
-	t_cmd	*current;
-
-	current = cmd_list;
-	while (current)
-	{
-		if (current->pipe_fd[0] != -1)
-			close(current->pipe_fd[0]);
-		if (current->pipe_fd[1] != -1)
-			close(current->pipe_fd[1]);
-		current = current->next;
-	}
-}
-
-/* 设置管道重定向 */
-static void	setup_pipes(t_cmd *cmd, t_cmd *prev)
-{
-	if (prev && prev->pipe_fd[0] != -1)
-	{
-		dup2(prev->pipe_fd[0], STDIN_FILENO);
-		close(prev->pipe_fd[0]);
-	}
-	if (cmd->next && cmd->pipe_fd[1] != -1)
-	{
-		dup2(cmd->pipe_fd[1], STDOUT_FILENO);
-		close(cmd->pipe_fd[1]);
-	}
-}
-
 /* 设置文件重定向 */
 static int	setup_redirections(t_redirect *redirects)
 {
@@ -261,57 +230,141 @@ static int	execute_commands(t_cmd *cmd_list, t_env **env_list, t_shell *shell)
 {
 	t_cmd	*current;
 	t_cmd	*prev;
-	int		exit_status;
+	int		exit_status = 0;
 	int		stdin_backup;
 	int		stdout_backup;
-	char	*exit_str;
+	pid_t	*pids;
+	int		i;
+	int		num_cmds;
+
+	// Count number of commands
+	num_cmds = 0;
+	current = cmd_list;
+	while (current)
+	{
+		num_cmds++;
+		current = current->next;
+	}
+
+	// Allocate array for process IDs
+	pids = malloc(sizeof(pid_t) * num_cmds);
+	if (!pids)
+		return (1);
 
 	if (!create_pipes(cmd_list))
+	{
+		free(pids);
 		return (1);
+	}
 
 	stdin_backup = dup(STDIN_FILENO);
 	stdout_backup = dup(STDOUT_FILENO);
 
+	// Execute each command in its own process
 	current = cmd_list;
 	prev = NULL;
-	exit_status = 0;
-
+	i = 0;
 	while (current)
 	{
-		setup_pipes(current, prev);
-
-		if (!setup_redirections(current->redirects))
+		pids[i] = fork();
+		if (pids[i] == 0)
 		{
-			exit_status = 1;
+			// Child process
+			// Close all pipe ends in child process
+			t_cmd *temp = cmd_list;
+			while (temp)
+			{
+				if (temp != current && temp != prev)
+				{
+					if (temp->pipe_fd[0] != -1)
+						close(temp->pipe_fd[0]);
+					if (temp->pipe_fd[1] != -1)
+						close(temp->pipe_fd[1]);
+				}
+				temp = temp->next;
+			}
+
+			// Set up input from previous command
+			if (prev)
+			{
+				if (prev->pipe_fd[0] != -1)
+				{
+					dup2(prev->pipe_fd[0], STDIN_FILENO);
+					close(prev->pipe_fd[0]);
+				}
+				if (prev->pipe_fd[1] != -1)
+					close(prev->pipe_fd[1]);
+			}
+
+			// Set up output to next command
+			if (current->next)
+			{
+				if (current->pipe_fd[1] != -1)
+				{
+					dup2(current->pipe_fd[1], STDOUT_FILENO);
+					close(current->pipe_fd[1]);
+				}
+				if (current->pipe_fd[0] != -1)
+					close(current->pipe_fd[0]);
+			}
+
+			if (!setup_redirections(current->redirects))
+				exit(1);
+
+			if (current->args && current->args[0])
+			{
+				if (is_builtin(current->args[0]))
+					exit(exec_builtin(current, env_list, shell));
+				else
+					exit(execute_external_cmd(current, *env_list));
+			}
+			exit(0);
+		}
+		else if (pids[i] < 0)
+		{
+			perror("fork");
 			goto cleanup;
 		}
-
-		// 执行命令
-		if (current->args && current->args[0])
-		{
-			if (is_builtin(current->args[0]))
-				exit_status = exec_builtin(current, env_list, shell);
-			else
-				exit_status = execute_external_cmd(current, *env_list);
-		}
-
-		// 设置 $? 环境变量
-		exit_str = ft_itoa(exit_status);
-		set_env_value(env_list, "?", exit_str);
-		free(exit_str);
-
-		// 恢复标准输入输出
-		dup2(stdin_backup, STDIN_FILENO);
-		dup2(stdout_backup, STDOUT_FILENO);
-
 		prev = current;
+		current = current->next;
+		i++;
+	}
+
+	// Close all pipes in parent process
+	current = cmd_list;
+	while (current)
+	{
+		if (current->pipe_fd[0] != -1)
+		{
+			close(current->pipe_fd[0]);
+			current->pipe_fd[0] = -1;
+		}
+		if (current->pipe_fd[1] != -1)
+		{
+			close(current->pipe_fd[1]);
+			current->pipe_fd[1] = -1;
+		}
 		current = current->next;
 	}
 
+	// Wait for all child processes
+	i = 0;
+	while (i < num_cmds)
+	{
+		waitpid(pids[i], &exit_status, 0);
+		if (WIFEXITED(exit_status))
+			exit_status = WEXITSTATUS(exit_status);
+		i++;
+	}
+
+	// Restore stdin/stdout
+	dup2(stdin_backup, STDIN_FILENO);
+	dup2(stdout_backup, STDOUT_FILENO);
+
 cleanup:
-	close_pipes(cmd_list);
 	close(stdin_backup);
 	close(stdout_backup);
+	free(pids);
 	return (exit_status);
 }
 
