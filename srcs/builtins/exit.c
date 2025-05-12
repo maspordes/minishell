@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exit.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 00:54:57 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/05 13:43:17 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/12 22:16:36 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,7 @@ int	ft_exit(char **args, t_shell *shell)
     {
         fprintf(stderr, "minishell: exit: %s: numeric argument required\n", args[1]);
         free(clean_arg);
-        exit(255);
+        exit(2);
     }
 
     // Convert the argument to a long and handle overflow

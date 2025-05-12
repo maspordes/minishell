@@ -6,7 +6,7 @@
 #    By: marrey <marrey@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/01 00:00:00 by user              #+#    #+#              #
-#    Updated: 2025/05/12 20:05:40 by marrey           ###   ########.fr        #
+#    Updated: 2025/05/12 22:02:50 by marrey           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,6 +30,9 @@ SRCS_PATH = ./srcs
 SRCS = $(SRCS_PATH)/main.c \
        $(SRCS_PATH)/lexer/lexer.c \
        $(SRCS_PATH)/parser/parser.c \
+       $(SRCS_PATH)/expansion/expansion.c \
+       $(SRCS_PATH)/expansion/variable_expansion.c \
+       $(SRCS_PATH)/expansion/quote_removal.c \
        $(SRCS_PATH)/executor/executor.c \
        $(SRCS_PATH)/executor/heredoc.c \
        $(SRCS_PATH)/executor/filename_utils.c \
@@ -41,7 +44,8 @@ SRCS = $(SRCS_PATH)/main.c \
        $(SRCS_PATH)/builtins/env.c \
        $(SRCS_PATH)/builtins/exit.c \
        $(SRCS_PATH)/signals/signals.c \
-       $(SRCS_PATH)/env/env.c
+       $(SRCS_PATH)/env/env.c \
+       $(SRCS_PATH)/utils/error_utils.c
 
 # 目标文件
 OBJS = $(SRCS:.c=.o)

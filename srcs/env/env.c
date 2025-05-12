@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   env.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/05 00:43:53 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/12 22:13:03 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,13 +84,16 @@ t_env	*init_env(char **envp)
 }
 
 /* 获取环境变量值 */
-char	*get_env_value(t_env *env_list, char *key)
+char	*get_env_value(t_env *env_list, const char *key)
 {
-	while (env_list)
+	t_env	*current;
+
+	current = env_list;
+	while (current)
 	{
-		if (ft_strcmp(env_list->key, key) == 0)
-			return (env_list->value);
-		env_list = env_list->next;
+		if (ft_strcmp(current->key, key) == 0)
+			return (current->value);
+		current = current->next;
 	}
 	return (NULL);
 }
@@ -121,39 +124,52 @@ void	set_env_value(t_env **env_list, char *key, char *value)
 /* 添加或更新环境变量 */
 void	add_or_update_env(t_env **env_list, const char *arg)
 {
-    char	*key;
-    char	*value;
-    t_env	*current;
+	char	*key;
+	char	*value;
+	t_env	*current;
+	t_env	*new_node;
 
-    // Split the argument into key and value
-    key = ft_strdup(arg);
-    value = ft_strchr(key, '=');
-    if (value)
-    {
-        *value = '\0'; // Null-terminate the key
-        value++;       // Move to the value part
-    }
+	/* Split the argument into key and value */
+	key = ft_strdup(arg);
+	value = ft_strchr(key, '=');
+	if (value)
+	{
+		*value = '\0';
+		value++;
+	}
 
-    // Search for the key in the environment list
-    current = *env_list;
-    while (current)
-    {
-        if (ft_strcmp(current->key, key) == 0)
-        {
-            free(current->value);
-            current->value = value ? ft_strdup(value) : NULL;
-            free(key);
-            return;
-        }
-        current = current->next;
-    }
+	/* Search for the key in the environment list */
+	current = *env_list;
+	while (current)
+	{
+		if (ft_strcmp(current->key, key) == 0)
+		{
+			free(current->value);
+			if (value)
+				current->value = ft_strdup(value);
+			else
+				current->value = NULL;
+			free(key);
+			return ;
+		}
+		current = current->next;
+	}
 
-    // If the key does not exist, add a new entry
-    t_env *new_env = malloc(sizeof(t_env));
-    new_env->key = key;
-    new_env->value = value ? ft_strdup(value) : NULL;
-    new_env->next = *env_list;
-    *env_list = new_env;
+	/* If the key does not exist, add a new entry */
+	new_node = malloc(sizeof(t_env));
+	if (!new_node)
+	{
+		free(key);
+		/* Consider proper error handling for malloc failure */
+		return ;
+	}
+	new_node->key = key;
+	if (value)
+		new_node->value = ft_strdup(value);
+	else
+		new_node->value = NULL;
+	new_node->next = *env_list;
+	*env_list = new_node;
 }
 
 /* 释放环境变量链表 */

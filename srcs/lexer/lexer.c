@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   lexer.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/05/05 00:37:01 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/12 22:36:52 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,47 +105,52 @@ static int	handle_special_char(char *input, int *i, t_token **tokens)
 	return (0);
 }
 
-/* 处理单词 */
+/* 处理单词或引用 */
 static void	handle_word(char *input, int *i, t_token **tokens)
 {
 	int		start;
-	char	*word;
-	char	*temp;
+	char	*word_segment;
+	char	*quoted_word;
 
-	word = ft_strdup("");
-	while (input[*i])
+	start = *i;
+	// Case 1: Handle quoted segment if word starts with quote
+	if (input[start] == '\'' || input[start] == '\"')
 	{
-		if (input[*i] == ' ' || input[*i] == '\t')
-			break;
-		else if (input[*i] == '\'' || input[*i] == '\"')
+		quoted_word = ft_strdup("");
+		if (handle_quotes(input, i, &quoted_word)) // Advances i past closing quote
 		{
-			if (!handle_quotes(input, i, &word))
-			{
-				temp = word;
-				word = ft_strjoin(word, ft_substr(input, *i, ft_strlen(input) - *i));
-				free(temp);
-				*i = ft_strlen(input);
-				break;
-			}
+			// Add token even if empty ("" or '') - parser might need it
+			add_token(tokens, new_token(quoted_word, T_WORD));
 		}
-		else if (handle_special_char(input, i, tokens))
-			break;
 		else
 		{
-			start = *i;
-			while (input[*i] && input[*i] != ' ' && input[*i] != '\t'
-				&& input[*i] != '\'' && input[*i] != '\"'
-				&& input[*i] != '|' && input[*i] != '<' && input[*i] != '>')
-				(*i)++;
-			temp = word;
-			word = ft_strjoin(word, ft_substr(input, start, *i - start));
-			free(temp);
+			// Unclosed quote: handle_quotes consumes rest of string and appends.
+			// Add the partial token. Consider signaling error later.
+			add_token(tokens, new_token(quoted_word, T_WORD));
+			// *i is already at end of string from handle_quotes
 		}
 	}
-	if (ft_strlen(word) > 0)
-		add_token(tokens, new_token(word, T_WORD));
+	// Case 2: Handle unquoted word segment
 	else
-		free(word);
+	{
+		// Consume characters until a delimiter (space, tab, |, <, >, quote, NUL)
+		while (input[*i] &&
+			   input[*i] != ' ' && input[*i] != '\t' &&
+			   input[*i] != '|' && input[*i] != '<' && input[*i] != '>' &&
+			   input[*i] != '\'' && input[*i] != '\"')
+		{
+			(*i)++;
+		}
+		// If we consumed any characters, add the segment
+		if (*i > start)
+		{
+			word_segment = ft_substr(input, start, *i - start);
+			add_token(tokens, new_token(word_segment, T_WORD));
+		}
+		// If *i == start, it means we started on a delimiter that wasn't handled
+		// by the main loop (shouldn't happen with current main loop logic).
+	}
+	// Index 'i' is advanced by handle_quotes or the while loop here.
 }
 
 /* 词法分析主函数 */
@@ -160,10 +165,15 @@ t_token	*lexer(char *input)
 	{
 		if (input[i] == ' ' || input[i] == '\t')
 			i++;
-		else if (handle_special_char(input, &i, &tokens))
-			continue ;
-		else
-			handle_word(input, &i, &tokens);
+		/* Check for special operator tokens first */
+		else if (input[i] == '|' || input[i] == '<' || input[i] == '>')
+		{
+			handle_special_char(input, &i, &tokens); /* This advances i */
+		}
+		else /* Must be a word or start of a quoted segment */
+		{
+			handle_word(input, &i, &tokens); /* This should advance i */
+		}
 	}
 	return (tokens);
 }

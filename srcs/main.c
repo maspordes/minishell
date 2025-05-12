@@ -6,7 +6,7 @@
 /*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/05/12 20:46:18 by marrey           ###   ########.fr       */
+/*   Updated: 2025/05/12 22:37:26 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,44 +62,107 @@ void	free_shell(t_shell *shell)
 	free(shell);
 }
 
-/* 处理输入行 */
+static int	execute_pipeline(t_shell *shell)
+{
+	t_cmd	*current_cmd;
+	int		expansion_failed;
+
+	// fprintf(stderr, "[Debug] execute_pipeline: Initial shell->exit_status = %d\n", shell->exit_status); // DEBUG
+	expansion_failed = 0;
+	current_cmd = shell->cmd_list;
+	while (current_cmd)
+	{
+		if (expand_command(current_cmd, shell) != 0)
+		{
+			shell->exit_status = 1;
+			expansion_failed = 1;
+			// fprintf(stderr, "[Debug] execute_pipeline: expansion_failed for cmd: %s, setting shell->exit_status = 1\n", current_cmd && current_cmd->args && current_cmd->args[0] ? current_cmd->args[0] : "N/A"); // DEBUG
+			break ;
+		}
+		current_cmd = current_cmd->next;
+	}
+	// fprintf(stderr, "[Debug] execute_pipeline: After expansion loop, expansion_failed = %d, shell->exit_status = %d\n", expansion_failed, shell->exit_status); // DEBUG
+	if (!expansion_failed)
+	{
+		// fprintf(stderr, "[Debug] execute_pipeline: Calling executor. shell->exit_status before executor = %d\n", shell->exit_status); // DEBUG
+		shell->exit_status = executor(shell->cmd_list, &(shell->env_list), shell);
+		// fprintf(stderr, "[Debug] execute_pipeline: After executor, executor returned, new shell->exit_status = %d\n", shell->exit_status); // DEBUG
+	}
+	free_cmds(shell->cmd_list);
+	shell->cmd_list = NULL;
+	// fprintf(stderr, "[Debug] execute_pipeline: returning %d (shell->exit_status = %d)\n", shell->exit_status, shell->exit_status);
+	return (shell->exit_status);
+}
+
 static int	process_input(t_shell *shell)
 {
 	if (!shell->input || shell->input[0] == '\0')
 		return (0);
-	add_history(shell->input);
 	shell->tokens = lexer(shell->input);
+	// DEBUG: Print tokens before parser
+	/*
+	fprintf(stderr, "[Debug] process_input: Tokens before parser:\n");
+	t_token *dbg_token = shell->tokens;
+	while (dbg_token)
+	{
+		fprintf(stderr, "  Token: Type=%d, Value='%s'\n", dbg_token->type, dbg_token->value ? dbg_token->value : "(null)");
+		dbg_token = dbg_token->next;
+	}
+	*/
+	// End DEBUG
 	if (!shell->tokens)
 		return (0);
 	shell->cmd_list = parser(shell->tokens);
+	// fprintf(stderr, "[Debug] process_input: After parser, shell->cmd_list is %p\n", shell->cmd_list);
+	free_tokens(shell->tokens);
+	shell->tokens = NULL;
 	if (!shell->cmd_list)
+	{
+		// fprintf(stderr, "[Debug] process_input: Parser returned NULL, returning 0\n");
 		return (0);
-	
-	// 执行命令并保存退出状态码
-	shell->exit_status = executor(shell->cmd_list, &(shell->env_list));
-	return (shell->exit_status);
+	}
+	return (execute_pipeline(shell));
 }
 
 /* 设置终端属性 */
-static void setup_readline(void)
+static void	setup_readline(void)
 {
-	struct termios term;
+	struct termios	term;
 
-	// 获取当前终端设置
 	tcgetattr(STDIN_FILENO, &term);
-
-	// 配置终端以更接近 Bash 的行为
-	// ECHOCTL: 控制是否回显控制字符（如 ^C）
-	term.c_lflag &= ~ECHOCTL;  // 禁用控制字符回显
-
-	// 应用新的终端设置
+	term.c_lflag &= ~ECHOCTL;
 	tcsetattr(STDIN_FILENO, TCSANOW, &term);
+}
+
+static void	handle_sigint_prompt(void)
+{
+	if (g_signal_status == 130)
+	{
+		g_signal_status = 0;
+		printf("\n");
+		rl_on_new_line();
+		rl_replace_line("", 0);
+	}
+}
+
+static char *read_input(void)
+{
+	char *prompt;
+
+	prompt = readline("minishell> ");
+	if (!prompt)
+	{
+		printf("exit\n");
+		return (NULL);
+	}
+	return (prompt);
 }
 
 int	main(int argc, char **argv, char **envp)
 {
 	t_shell	*shell;
-	char	*prompt;
+	char	*current_input;
+	int		last_status = 0; // Initialize
 
 	(void)argc;
 	(void)argv;
@@ -107,45 +170,31 @@ int	main(int argc, char **argv, char **envp)
 	if (!shell)
 		return (1);
 	setup_signals();
-	setup_readline();
-
+	setup_readline(); /* Call unconditionally again */
 	while (1)
 	{
-		// 检查是否有信号中断
-		if (g_signal_status == 130) /* Check specific signal status if needed */
+		handle_sigint_prompt();
+		current_input = read_input(); /* Uses readline */
+		if (!current_input) /* EOF */
+			break ;
+		if (current_input[0] != '\0')
 		{
-			// 重置信号状态
-			g_signal_status = 0;
-			// Maybe update $? to 130?
-			printf("\n"); /* Print newline after ^C */
-			rl_on_new_line(); /* Tell readline we are on a new line */
-			rl_replace_line("", 0); /* Clear current buffer */
-			/* Do not redisplay here, readline will handle it */
-			continue; /* Go straight to readline */
+			shell->input = ft_strdup(current_input);
+			free(current_input);
+			if (shell->input)
+			{
+				add_history(shell->input); /* Add history here again */
+				process_input(shell);
+				clean_current_command(shell);
+			}
 		}
-		
-		// 使用 readline 的内置提示符
-		prompt = readline("minishell> ");
-		
-		if (!prompt)  /* Ctrl+D or EOF */
+		else
 		{
-			printf("exit\n");
-			break; /* Exit loop */
-		}
-		
-		if (prompt[0] != '\0')
-		{
-			shell->input = ft_strdup(prompt);
-			/* process_input now handles add_history */
-			process_input(shell);
-			free(prompt);
-			clean_current_command(shell);
-		}
-		else /* Empty line entered */
-		{
-			free(prompt);
+			free(current_input);
 		}
 	}
+	last_status = shell->exit_status;
 	free_shell(shell);
-	return (shell->exit_status); /* Return last command's status */
+	// fprintf(stderr, "[Debug] main: returning %d\n", last_status);
+	return (last_status);
 } 

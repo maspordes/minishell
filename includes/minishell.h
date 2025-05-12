@@ -6,7 +6,7 @@
 /*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/05/12 20:05:40 by marrey           ###   ########.fr       */
+/*   Updated: 2025/05/12 22:29:35 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,7 +100,10 @@ t_cmd	*parser(t_token *tokens);
 void	free_cmds(t_cmd *cmds);
 
 /* 执行器 */
-int		executor(t_cmd *cmd_list, t_env **env_list);
+int		executor(t_cmd *cmd_list, t_env **env_list, t_shell *shell);
+char	*find_executable(char *cmd, t_env *env_list);
+void	free_array(char **array);
+int		handle_heredoc(char *delimiter);
 
 /* 内置命令 */
 int		ft_echo(char **args, t_env *env_list);
@@ -113,7 +116,7 @@ int		ft_exit(char **args, t_shell *shell);
 
 /* 环境变量 */
 t_env	*init_env(char **envp);
-char	*get_env_value(t_env *env_list, char *key);
+char	*get_env_value(t_env *env_list, const char *key);
 void	set_env_value(t_env **env_list, char *key, char *value);
 void	free_env(t_env *env_list);
 char	**env_to_array(t_env *env_list);
@@ -127,10 +130,9 @@ void	reset_signals(void);
 int		is_builtin(char *cmd);
 int		exec_builtin(t_cmd *cmd, t_env **env_list, t_shell *shell);
 char	*expand_variables(char *str, t_env *env_list, int exit_status);
-void	free_array(char **array);
-int		handle_heredoc(char *delimiter);
 char	*ft_strjoin_char(char *s1, char c);
 char	*ft_strjoin_free(char *s1, const char *s2);
+void	print_error(const char *prefix, const char *arg, const char *message);
 
 /* Filename Utils */
 char	*process_filename_quotes(const char *raw_filename);
@@ -141,10 +143,19 @@ void	print_export_env(t_env *env_list);
 char	*get_key_from_str(const char *str);
 
 /* readline 函数声明 - 条件编译 */
-#ifdef __linux__
+# ifdef __linux__
 /* 在 Linux 上声明 readline 函数 */
 void	rl_replace_line(const char *text, int clear_undo);
 void	rl_redisplay(void);
-#endif
+# endif
+
+/* Expansion module */
+int		expand_command(t_cmd *cmd, t_shell *shell);
+char	*expand_variables_in_str(char *str, t_shell *shell);
+char	*remove_quotes_from_str(char *str);
+
+/* Parser module */
+t_cmd	*parser(t_token *tokens);
+void	free_cmds(t_cmd *cmd_list);
 
 #endif
