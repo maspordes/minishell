@@ -16,6 +16,7 @@
 int	ft_cd(char **args, t_env **env_list)
 {
     char	*path;
+    char	*old_pwd;
 
     // Handle "too many arguments" error
     if (args[1] && args[2])
@@ -24,19 +25,26 @@ int	ft_cd(char **args, t_env **env_list)
         return (1);
     }
 
+    // Get current PWD before changing directory
+    old_pwd = get_env_value(*env_list, "PWD");
+    if (old_pwd)
+        old_pwd = ft_strdup(old_pwd);
+
     // Expand environment variables in the path
     path = args[1] ? expand_variables(args[1], *env_list, 0) : get_env_value(*env_list, "HOME");
     if (!path || chdir(path) != 0)
     {
         fprintf(stderr, "cd: %s: No such file or directory\n", args[1]);
         free(path);
+        free(old_pwd);
         return (1);
     }
 
     // Update PWD and OLDPWD environment variables
-    set_env_value(env_list, "OLDPWD", get_env_value(*env_list, "PWD"));
+    set_env_value(env_list, "OLDPWD", old_pwd);
     set_env_value(env_list, "PWD", getcwd(NULL, 0));
     free(path);
+    free(old_pwd);
     return (0);
 }
 
