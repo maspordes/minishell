@@ -118,6 +118,44 @@ void	set_env_value(t_env **env_list, char *key, char *value)
 	add_env(env_list, new_env(key, value));
 }
 
+/* 添加或更新环境变量 */
+void	add_or_update_env(t_env **env_list, const char *arg)
+{
+    char	*key;
+    char	*value;
+    t_env	*current;
+
+    // Split the argument into key and value
+    key = ft_strdup(arg);
+    value = ft_strchr(key, '=');
+    if (value)
+    {
+        *value = '\0'; // Null-terminate the key
+        value++;       // Move to the value part
+    }
+
+    // Search for the key in the environment list
+    current = *env_list;
+    while (current)
+    {
+        if (ft_strcmp(current->key, key) == 0)
+        {
+            free(current->value);
+            current->value = value ? ft_strdup(value) : NULL;
+            free(key);
+            return;
+        }
+        current = current->next;
+    }
+
+    // If the key does not exist, add a new entry
+    t_env *new_env = malloc(sizeof(t_env));
+    new_env->key = key;
+    new_env->value = value ? ft_strdup(value) : NULL;
+    new_env->next = *env_list;
+    *env_list = new_env;
+}
+
 /* 释放环境变量链表 */
 void	free_env(t_env *env_list)
 {
@@ -171,4 +209,4 @@ char	**env_to_array(t_env *env_list)
 	}
 	env_array[i] = NULL;
 	return (env_array);
-} 
+}

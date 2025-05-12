@@ -22,4 +22,4 @@ int	ft_env(t_env *env_list)
 		env_list = env_list->next;
 	}
 	return (0);
-} 
+}

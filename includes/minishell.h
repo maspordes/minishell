@@ -103,7 +103,7 @@ void	free_cmds(t_cmd *cmds);
 int		executor(t_cmd *cmd_list, t_env **env_list);
 
 /* 内置命令 */
-int		ft_echo(char **args);
+int		ft_echo(char **args, t_env *env_list);
 int		ft_cd(char **args, t_env **env_list);
 int		ft_pwd(void);
 int		ft_export(char **args, t_env **env_list);
@@ -117,6 +117,7 @@ char	*get_env_value(t_env *env_list, char *key);
 void	set_env_value(t_env **env_list, char *key, char *value);
 void	free_env(t_env *env_list);
 char	**env_to_array(t_env *env_list);
+void	add_or_update_env(t_env **env_list, const char *arg);
 
 /* 信号处理 */
 void	setup_signals(void);
@@ -128,9 +129,13 @@ int		exec_builtin(t_cmd *cmd, t_env **env_list, t_shell *shell);
 char	*expand_variables(char *str, t_env *env_list, int exit_status);
 void	free_array(char **array);
 int		handle_heredoc(char *delimiter);
+char	*ft_strjoin_char(char *s1, char c);
+char	*ft_strjoin_free(char *s1, const char *s2);
 
 /* 添加到函数原型部分 */
 void	free_shell(t_shell *shell);
+void	print_export_env(t_env *env_list);
+char	*get_key_from_str(const char *str);
 
 /* readline 函数声明 - 条件编译 */
 #ifdef __linux__
@@ -139,4 +144,4 @@ void	rl_replace_line(const char *text, int clear_undo);
 void	rl_redisplay(void);
 #endif
 
-#endif 
+#endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/06 17:17:34 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/06 21:26:57 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,16 +30,16 @@ int	exec_builtin(t_cmd *cmd, t_env **env_list, t_shell *shell)
 {
 	if (!cmd->args || !cmd->args[0])
 		return (0);
-	
+
 	// 确保 shell 非空
 	if (!shell)
 	{
 		fprintf(stderr, "Shell structure is NULL in exec_builtin\n");
 		return (1);
 	}
-	
+
 	if (ft_strcmp(cmd->args[0], "echo") == 0)
-		return (ft_echo(cmd->args));
+		return (ft_echo(cmd->args, *env_list));
 	else if (ft_strcmp(cmd->args[0], "cd") == 0)
 		return (ft_cd(cmd->args, env_list));
 	else if (ft_strcmp(cmd->args[0], "pwd") == 0)
@@ -217,25 +217,20 @@ static int	execute_external_cmd(t_cmd *cmd, t_env *env_list)
 	pid_t	pid;
 	int		status;
 
-	// 添加调试输出以确认函数被调用
-	fprintf(stderr, "执行外部命令: %s\n", cmd->args[0]);
-	
 	cmd_path = find_executable(cmd->args[0], env_list);
 	if (!cmd_path)
 	{
 		printf("minishell: %s: command not found\n", cmd->args[0]);
 		return (127);
 	}
-	
+
 	env_array = env_to_array(env_list);
-	
-	// 设置子进程的信号处理
+
 	reset_signals();
-	
+
 	pid = fork();
 	if (pid == 0)
 	{
-		// 子进程
 		if (execve(cmd_path, cmd->args, env_array) == -1)
 		{
 			perror("execve");
@@ -249,16 +244,13 @@ static int	execute_external_cmd(t_cmd *cmd, t_env *env_list)
 		free_array(env_array);
 		return (1);
 	}
-	
-	// 等待子进程结束
+
 	waitpid(pid, &status, 0);
-	
+
 	free(cmd_path);
 	free_array(env_array);
-	
-	// 恢复信号处理
 	setup_signals();
-	
+
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
 	return (1);
@@ -272,30 +264,28 @@ static int	execute_commands(t_cmd *cmd_list, t_env **env_list, t_shell *shell)
 	int		exit_status;
 	int		stdin_backup;
 	int		stdout_backup;
+	char	*exit_str;
 
 	if (!create_pipes(cmd_list))
 		return (1);
-	
-	// 备份标准输入输出
+
 	stdin_backup = dup(STDIN_FILENO);
 	stdout_backup = dup(STDOUT_FILENO);
-	
+
 	current = cmd_list;
 	prev = NULL;
 	exit_status = 0;
-	
+
 	while (current)
 	{
-		// 设置管道
 		setup_pipes(current, prev);
-		
-		// 设置重定向
+
 		if (!setup_redirections(current->redirects))
 		{
 			exit_status = 1;
-			goto cleanup;  // 重定向失败，跳到清理部分
+			goto cleanup;
 		}
-		
+
 		// 执行命令
 		if (current->args && current->args[0])
 		{
@@ -304,15 +294,20 @@ static int	execute_commands(t_cmd *cmd_list, t_env **env_list, t_shell *shell)
 			else
 				exit_status = execute_external_cmd(current, *env_list);
 		}
-		
+
+		// 设置 $? 环境变量
+		exit_str = ft_itoa(exit_status);
+		set_env_value(env_list, "?", exit_str);
+		free(exit_str);
+
 		// 恢复标准输入输出
 		dup2(stdin_backup, STDIN_FILENO);
 		dup2(stdout_backup, STDOUT_FILENO);
-		
+
 		prev = current;
 		current = current->next;
 	}
-	
+
 cleanup:
 	close_pipes(cmd_list);
 	close(stdin_backup);
@@ -325,12 +320,12 @@ int	executor(t_cmd *cmd_list, t_env **env_list)
 {
 	if (!cmd_list)
 		return (0);
-	
+
 	// 创建一个临时 shell 结构或从全局获取
 	t_shell shell;
 	shell.env_list = *env_list;
 	shell.cmd_list = cmd_list;
 	shell.exit_status = 0;
-	
+
 	return (execute_commands(cmd_list, env_list, &shell));
-} 
+}

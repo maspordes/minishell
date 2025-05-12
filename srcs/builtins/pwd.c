@@ -15,8 +15,15 @@
 /* pwd 命令的实现 */
 int	ft_pwd(void)
 {
+	char	*pwd;
 	char	cwd[1024];
 
+	pwd = getenv("PWD");
+	if (pwd && access(pwd, F_OK) == 0)
+	{
+		printf("%s\n", pwd);
+		return (0);
+	}
 	if (getcwd(cwd, sizeof(cwd)))
 	{
 		printf("%s\n", cwd);

@@ -12,92 +12,76 @@
 
 #include "../../includes/minishell.h"
 
-/* 打印所有环境变量（带 declare -x 前缀） */
-static void	print_export_env(t_env *env_list)
+void	print_export_env(t_env *env_list)
 {
-	while (env_list)
-	{
-		printf("declare -x %s", env_list->key);
-		if (env_list->value)
-			printf("=\"%s\"", env_list->value);
-		printf("\n");
-		env_list = env_list->next;
-	}
+    while (env_list)
+    {
+        printf("declare -x %s", env_list->key);
+        if (env_list->value)
+            printf("=\"%s\"", env_list->value);
+        printf("\n");
+        env_list = env_list->next;
+    }
 }
 
-/* 解析待设置的环境变量 */
-static int	parse_export_arg(char *arg, char **key, char **value)
+/* Helper function to validate identifiers */
+int	is_valid_identifier(const char *str)
 {
-	int	i;
-	int	has_equal;
+    int	i;
 
-	i = 0;
-	has_equal = 0;
-	while (arg[i])
-	{
-		if (arg[i] == '=')
-		{
-			has_equal = 1;
-			break ;
-		}
-		i++;
-	}
-	*key = ft_substr(arg, 0, i);
-	if (has_equal)
-		*value = ft_substr(arg, i + 1, ft_strlen(arg) - i - 1);
-	else
-		*value = NULL;
-	return (1);
-}
+    if (!str || (!ft_isalpha(str[0]) && str[0] != '_'))
+        return (0); // Must start with a letter or '_'
 
-/* 验证环境变量名是否有效 */
-static int	validate_env_key(char *key)
-{
-	int	i;
-
-	if (!key || !key[0] || !(ft_isalpha(key[0]) || key[0] == '_'))
-		return (0);
-	i = 1;
-	while (key[i])
-	{
-		if (!(ft_isalnum(key[i]) || key[i] == '_'))
-			return (0);
-		i++;
-	}
-	return (1);
+    i = 1;
+    while (str[i] && str[i] != '=')
+    {
+        if (!ft_isalnum(str[i]) && str[i] != '_')
+            return (0); // Only alphanumeric or '_' allowed before '='
+        i++;
+    }
+    return (1); // Valid identifier
 }
 
 /* export 命令的实现 */
 int	ft_export(char **args, t_env **env_list)
 {
-	int		i;
-	char	*key;
-	char	*value;
-	int		ret;
+    int		i;
+    int		exit_status;
+    char	*key;
+    char	*value;
 
-	ret = 0;
-	if (!args[1])
-	{
-		print_export_env(*env_list);
-		return (0);
-	}
-	i = 1;
-	while (args[i])
-	{
-		if (parse_export_arg(args[i], &key, &value))
-		{
-			if (validate_env_key(key))
-				set_env_value(env_list, key, value);
-			else
-			{
-				printf("export: '%s': not a valid identifier\n", args[i]);
-				ret = 1;
-			}
-			free(key);
-			if (value)
-				free(value);
-		}
-		i++;
-	}
-	return (ret);
+    if (!args[1]) // If no arguments, print the environment variables
+    {
+        print_export_env(*env_list);
+        return (0);
+    }
+
+    i = 1;
+    exit_status = 0;
+    while (args[i])
+    {
+        // Split the argument into key and value
+        key = ft_strdup(args[i]);
+        value = ft_strchr(key, '=');
+        if (value)
+        {
+            *value = '\0'; // Null-terminate the key
+            value++;       // Move to the value part
+        }
+
+        // Validate the key only
+        if (!is_valid_identifier(key))
+        {
+            fprintf(stderr, "not a valid identifier\n");
+            exit_status = 1; // Set exit status to 1 for invalid identifier
+        }
+        else
+        {
+            // Add or update the environment variable
+            add_or_update_env(env_list, args[i]);
+        }
+        free(key);
+        i++;
+    }
+    return (exit_status);
 }

@@ -49,14 +49,20 @@ static int	handle_quotes(char *input, int *i, char **word)
 	int		start;
 
 	quote = input[*i];
-	start = ++(*i);
-	while (input[*i] && input[*i] != quote)
-		(*i)++;
-	if (!input[*i])
-		return (0); // 引号未闭合
-	*word = ft_strjoin(*word, ft_substr(input, start, *i - start));
+	start = *i;
 	(*i)++;
-	return (1);
+	while (input[*i])
+	{
+		if (input[*i] == quote)
+		{
+			(*i)++;
+			*word = ft_strjoin(*word, ft_substr(input, start, *i - start));
+			return (1);
+		}
+		(*i)++;
+	}
+	*word = ft_strjoin(*word, ft_substr(input, start, *i - start));
+	return (0);
 }
 
 /* 处理特殊字符 */
@@ -104,19 +110,26 @@ static void	handle_word(char *input, int *i, t_token **tokens)
 {
 	int		start;
 	char	*word;
+	char	*temp;
 
 	word = ft_strdup("");
 	while (input[*i])
 	{
 		if (input[*i] == ' ' || input[*i] == '\t')
-			break ;
+			break;
 		else if (input[*i] == '\'' || input[*i] == '\"')
 		{
 			if (!handle_quotes(input, i, &word))
-				break ;
+			{
+				temp = word;
+				word = ft_strjoin(word, ft_substr(input, *i, ft_strlen(input) - *i));
+				free(temp);
+				*i = ft_strlen(input);
+				break;
+			}
 		}
 		else if (handle_special_char(input, i, tokens))
-			break ;
+			break;
 		else
 		{
 			start = *i;
@@ -124,7 +137,9 @@ static void	handle_word(char *input, int *i, t_token **tokens)
 				&& input[*i] != '\'' && input[*i] != '\"'
 				&& input[*i] != '|' && input[*i] != '<' && input[*i] != '>')
 				(*i)++;
+			temp = word;
 			word = ft_strjoin(word, ft_substr(input, start, *i - start));
+			free(temp);
 		}
 	}
 	if (ft_strlen(word) > 0)
@@ -166,4 +181,4 @@ void	free_tokens(t_token *tokens)
 			free(tmp->value);
 		free(tmp);
 	}
-} 
+}
