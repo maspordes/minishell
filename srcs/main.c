@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/05/06 13:36:59 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/12 20:46:18 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,48 +107,45 @@ int	main(int argc, char **argv, char **envp)
 	if (!shell)
 		return (1);
 	setup_signals();
-	setup_readline();  // 保留函数调用以备将来需要添加其他 readline 设置
+	setup_readline();
 
 	while (1)
 	{
 		// 检查是否有信号中断
-		if (g_signal_status == 130)
+		if (g_signal_status == 130) /* Check specific signal status if needed */
 		{
 			// 重置信号状态
 			g_signal_status = 0;
-			// 显示新的提示符
-			continue;  // 直接跳回循环开始
+			// Maybe update $? to 130?
+			printf("\n"); /* Print newline after ^C */
+			rl_on_new_line(); /* Tell readline we are on a new line */
+			rl_replace_line("", 0); /* Clear current buffer */
+			/* Do not redisplay here, readline will handle it */
+			continue; /* Go straight to readline */
 		}
 		
 		// 使用 readline 的内置提示符
 		prompt = readline("minishell> ");
 		
-		if (!prompt)  // NULL 检查 - 可能是 Ctrl+D 或因信号中断
+		if (!prompt)  /* Ctrl+D or EOF */
 		{
-			// 如果是信号中断，不退出
-			if (g_signal_status == 130)
-			{
-				g_signal_status = 0;
-				continue;  // 重新显示提示符
-			}
-			// 否则是 Ctrl+D，退出
 			printf("exit\n");
-			break;
+			break; /* Exit loop */
 		}
 		
 		if (prompt[0] != '\0')
 		{
 			shell->input = ft_strdup(prompt);
-			add_history(shell->input);  // 只添加非空命令到历史
+			/* process_input now handles add_history */
 			process_input(shell);
 			free(prompt);
 			clean_current_command(shell);
 		}
-		else
+		else /* Empty line entered */
 		{
 			free(prompt);
 		}
 	}
 	free_shell(shell);
-	return (0);
+	return (shell->exit_status); /* Return last command's status */
 } 

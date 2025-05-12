@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+         #
+#    By: marrey <marrey@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/01 00:00:00 by user              #+#    #+#              #
-#    Updated: 2025/05/05 21:18:44 by shutan           ###   ########.fr        #
+#    Updated: 2025/05/12 20:05:40 by marrey           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,6 +32,7 @@ SRCS = $(SRCS_PATH)/main.c \
        $(SRCS_PATH)/parser/parser.c \
        $(SRCS_PATH)/executor/executor.c \
        $(SRCS_PATH)/executor/heredoc.c \
+       $(SRCS_PATH)/executor/filename_utils.c \
        $(SRCS_PATH)/builtins/echo.c \
        $(SRCS_PATH)/builtins/cd.c \
        $(SRCS_PATH)/builtins/pwd.c \

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/05/06 17:14:11 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/12 20:05:40 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,6 +131,9 @@ void	free_array(char **array);
 int		handle_heredoc(char *delimiter);
 char	*ft_strjoin_char(char *s1, char c);
 char	*ft_strjoin_free(char *s1, const char *s2);
+
+/* Filename Utils */
+char	*process_filename_quotes(const char *raw_filename);
 
 /* 添加到函数原型部分 */
 void	free_shell(t_shell *shell);

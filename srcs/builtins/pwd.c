@@ -3,35 +3,32 @@
 /*                                                        :::      ::::::::   */
 /*   pwd.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 00:54:35 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/05 00:54:35 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/12 20:31:56 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
-/* pwd 命令的实现 */
+/*
+** pwd 命令的实现
+** Should always print the actual current working directory
+*/
 int	ft_pwd(void)
 {
-	char	*pwd;
-	char	cwd[1024];
+	char	cwd[PATH_MAX]; /* Use PATH_MAX for better buffer size */
 
-	pwd = getenv("PWD");
-	if (pwd && access(pwd, F_OK) == 0)
-	{
-		printf("%s\n", pwd);
-		return (0);
-	}
-	if (getcwd(cwd, sizeof(cwd)))
+	if (getcwd(cwd, sizeof(cwd)) != NULL)
 	{
 		printf("%s\n", cwd);
 		return (0);
 	}
 	else
 	{
-		perror("pwd");
+		/* Handle potential errors, e.g., path too long or permissions */
+		perror("minishell: pwd");
 		return (1);
 	}
 }

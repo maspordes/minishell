@@ -3,49 +3,123 @@
 /*                                                        :::      ::::::::   */
 /*   cd.c                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 00:46:46 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/05 00:46:48 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/12 20:29:28 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
+/* Helper function to update PWD and OLDPWD */
+static int	update_pwd_env(t_env **env_list, char *old_pwd_val)
+{
+	char	*new_pwd_val;
+
+	new_pwd_val = getcwd(NULL, 0);
+	if (!new_pwd_val)
+	{
+		perror("cd: getcwd error");
+		/* OLDPWD might still be useful, but PWD update failed */
+		if (old_pwd_val)
+			set_env_value(env_list, "OLDPWD", old_pwd_val);
+		return (1); /* Indicate failure */
+	}
+	if (old_pwd_val)
+		set_env_value(env_list, "OLDPWD", old_pwd_val);
+	set_env_value(env_list, "PWD", new_pwd_val);
+	free(new_pwd_val); /* Free the value returned by getcwd */
+	return (0); /* Indicate success */
+}
+
+/* Helper function to determine the target path for cd */
+static char	*get_target_path(char **args, t_env *env_list)
+{
+	char	*path_arg;
+	char	*target_path;
+	char	*env_val;
+
+	path_arg = args[1];
+	if (!path_arg)
+	{
+		/* Case: cd */
+		env_val = get_env_value(env_list, "HOME");
+		if (!env_val)
+		{
+			fprintf(stderr, "minishell: cd: HOME not set\n");
+			return (NULL);
+		}
+		target_path = ft_strdup(env_val);
+	}
+	else if (ft_strcmp(path_arg, "-") == 0)
+	{
+		/* Case: cd - */
+		env_val = get_env_value(env_list, "OLDPWD");
+		if (!env_val)
+		{
+			fprintf(stderr, "minishell: cd: OLDPWD not set\n");
+			return (NULL);
+		}
+		target_path = ft_strdup(env_val);
+		/* Print the directory being changed to, like bash */
+		printf("%s\n", target_path);
+	}
+	else
+	{
+		/* Case: cd <path> */
+		/* Note: Expansion should ideally happen before this point */
+		/* Assuming args[1] is the final path for now */
+		target_path = ft_strdup(path_arg);
+	}
+	if (!target_path)
+		perror("cd: memory allocation error");
+	return (target_path);
+}
+
 /* cd 命令的实现 */
 int	ft_cd(char **args, t_env **env_list)
 {
-    char	*path;
-    char	*old_pwd;
+	char	*target_path;
+	char	*old_pwd_val;
+	int		result;
 
-    // Handle "too many arguments" error
-    if (args[1] && args[2])
-    {
-        fprintf(stderr, "cd: too many arguments\n");
-        return (1);
-    }
+	/* Handle "too many arguments" error */
+	if (args[1] && args[2])
+	{
+		fprintf(stderr, "minishell: cd: too many arguments\n");
+		return (1);
+	}
+	/* Get current PWD to set OLDPWD later */
+	/* For now, stick to env variable for consistency */
+	old_pwd_val = get_env_value(*env_list, "PWD");
+	if (old_pwd_val)
+		old_pwd_val = ft_strdup(old_pwd_val);
+	/* else: OLDPWD won't be set if PWD wasn't set */
 
-    // Get current PWD before changing directory
-    old_pwd = get_env_value(*env_list, "PWD");
-    if (old_pwd)
-        old_pwd = ft_strdup(old_pwd);
+	/* Determine the target path (handles NULL, "-", <path>) */
+	target_path = get_target_path(args, *env_list);
+	if (!target_path)
+	{
+		free(old_pwd_val); /* Free if strdup'd */
+		return (1); /* Error message printed in get_target_path */
+	}
+	/* Change directory */
+	if (chdir(target_path) != 0)
+	{
+		fprintf(stderr, "minishell: cd: %s: ", args[1] ? args[1] : "(HOME)");
+		perror(NULL);
+		free(target_path);
+		free(old_pwd_val);
+		return (1);
+	}
+	/* Update PWD and OLDPWD environment variables */
+	result = update_pwd_env(env_list, old_pwd_val);
 
-    // Expand environment variables in the path
-    path = args[1] ? expand_variables(args[1], *env_list, 0) : get_env_value(*env_list, "HOME");
-    if (!path || chdir(path) != 0)
-    {
-        fprintf(stderr, "cd: %s: No such file or directory\n", args[1]);
-        free(path);
-        free(old_pwd);
-        return (1);
-    }
-
-    // Update PWD and OLDPWD environment variables
-    set_env_value(env_list, "OLDPWD", old_pwd);
-    set_env_value(env_list, "PWD", getcwd(NULL, 0));
-    free(path);
-    free(old_pwd);
-    return (0);
+	/* Cleanup */
+	free(target_path);
+	free(old_pwd_val);
+	return (result);
 }
 
 char	*expand_variables(char *str, t_env *env_list, int exit_status)

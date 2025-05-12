@@ -3,14 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   executor.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/06 21:26:57 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/12 20:42:11 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
+
+// Forward declare the new function if needed, or ensure filename_utils.h exists and is included
+char	*expand_filename_quotes(const char *raw_filename);
 
 /* 检查是否为内置命令 */
 int	is_builtin(char *cmd)
@@ -76,27 +79,53 @@ static int	create_pipes(t_cmd *cmd_list)
 /* 设置文件重定向 */
 static int	setup_redirections(t_redirect *redirects)
 {
-	int	fd;
+	int		fd;
+	char	*processed_filename;
 
 	while (redirects)
 	{
+		/* Use the new expansion function */
+		if (redirects->type != T_HEREDOC)
+			processed_filename = expand_filename_quotes(redirects->file);
+		else
+			processed_filename = ft_strdup(redirects->file); /* Heredoc delimiter shouldn't be expanded */
+
+		if (!processed_filename)
+		{
+			fprintf(stderr, "minishell: memory allocation error\n");
+			return (0); /* Indicate failure */
+		}
+		/* Add check for empty filename after expansion */
+		if (processed_filename[0] == '\0')
+		{
+			fprintf(stderr, "minishell: ambiguous redirect\n"); /* Or some error */
+			free(processed_filename);
+			return (0);
+		}
+
 		if (redirects->type == T_REDIR_IN)
 		{
-			fd = open(redirects->file, O_RDONLY);
+			fd = open(processed_filename, O_RDONLY);
 			if (fd == -1)
 			{
-				perror(redirects->file);
-				return (0);
+				fprintf(stderr, "minishell: %s: ", processed_filename);
+				perror(NULL); 
+				fflush(stderr); /* Ensure error message is printed */
+				free(processed_filename);
+				return (0); 
 			}
 			dup2(fd, STDIN_FILENO);
 			close(fd);
 		}
 		else if (redirects->type == T_REDIR_OUT)
 		{
-			fd = open(redirects->file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+			fd = open(processed_filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 			if (fd == -1)
 			{
-				perror(redirects->file);
+				fprintf(stderr, "minishell: %s: ", processed_filename);
+				perror(NULL);
+				fflush(stderr); /* Ensure error message is printed */
+				free(processed_filename);
 				return (0);
 			}
 			dup2(fd, STDOUT_FILENO);
@@ -104,10 +133,13 @@ static int	setup_redirections(t_redirect *redirects)
 		}
 		else if (redirects->type == T_REDIR_APPEND)
 		{
-			fd = open(redirects->file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+			fd = open(processed_filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
 			if (fd == -1)
 			{
-				perror(redirects->file);
+				fprintf(stderr, "minishell: %s: ", processed_filename);
+				perror(NULL);
+				fflush(stderr); /* Ensure error message is printed */
+				free(processed_filename);
 				return (0);
 			}
 			dup2(fd, STDOUT_FILENO);
@@ -115,15 +147,20 @@ static int	setup_redirections(t_redirect *redirects)
 		}
 		else if (redirects->type == T_HEREDOC)
 		{
-			fd = handle_heredoc(redirects->file);
+			fd = handle_heredoc(processed_filename); /* Use the strduped delimiter */
 			if (fd == -1)
-				return (0);
+			{
+				/* handle_heredoc should print its own errors, maybe fflush there too */
+				free(processed_filename);
+				return (0); 
+			}
 			dup2(fd, STDIN_FILENO);
 			close(fd);
 		}
+		free(processed_filename); /* Free the name processed for this iteration */
 		redirects = redirects->next;
 	}
-	return (1);
+	return (1); /* Indicate success */
 }
 
 /* 查找可执行文件的路径 */
@@ -185,11 +222,43 @@ static int	execute_external_cmd(t_cmd *cmd, t_env *env_list)
 	char	**env_array;
 	pid_t	pid;
 	int		status;
+	char	**expanded_args; /* New array for expanded/cleaned args */
+	int		i;
 
-	cmd_path = find_executable(cmd->args[0], env_list);
+	/* Expand/Clean arguments (Quote removal for now) */
+	/* Count args */
+	i = 0;
+	while(cmd->args && cmd->args[i])
+		i++;
+	expanded_args = (char **)malloc(sizeof(char *) * (i + 1));
+	if (!expanded_args)
+	{
+		perror("malloc for expanded_args");
+		return (1); /* Indicate failure */
+	}
+	/* Expand each arg */
+	i = 0;
+	while (cmd->args && cmd->args[i])
+	{
+		/* Use the same quote expansion logic as for filenames */
+		expanded_args[i] = expand_filename_quotes(cmd->args[i]);
+		if (!expanded_args[i])
+		{
+			/* Handle allocation failure during expansion */
+			perror("expand arg failed");
+			free_array(expanded_args); /* Free already expanded args */
+			return (1);
+		}
+		i++;
+	}
+	expanded_args[i] = NULL;
+
+	/* Find executable using the *first expanded* arg */
+	cmd_path = find_executable(expanded_args[0], env_list);
 	if (!cmd_path)
 	{
-		printf("minishell: %s: command not found\n", cmd->args[0]);
+		printf("minishell: %s: command not found\n", expanded_args[0]);
+		free_array(expanded_args);
 		return (127);
 	}
 
@@ -200,138 +269,72 @@ static int	execute_external_cmd(t_cmd *cmd, t_env *env_list)
 	pid = fork();
 	if (pid == 0)
 	{
-		if (execve(cmd_path, cmd->args, env_array) == -1)
+		/* Execute with expanded args */
+		if (execve(cmd_path, expanded_args, env_array) == -1)
 		{
 			perror("execve");
+			/* Child needs to free allocated memory before exiting */
+			free(cmd_path);
+			free_array(expanded_args);
+			free_array(env_array);
 			exit(EXIT_FAILURE);
 		}
+		/* Should not reach here */
 	}
 	else if (pid < 0)
 	{
 		perror("fork");
 		free(cmd_path);
+		free_array(expanded_args);
 		free_array(env_array);
 		return (1);
 	}
 
+	/* Parent waits */
 	waitpid(pid, &status, 0);
 
+	/* Parent cleans up */
 	free(cmd_path);
+	free_array(expanded_args);
 	free_array(env_array);
 	setup_signals();
 
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
-	return (1);
+	/* Handle signaled child? */
+	else if (WIFSIGNALED(status))
+		return (128 + WTERMSIG(status));
+	return (1); /* Default return if not exited or signaled (error?) */
 }
 
-/* 执行命令链表 */
-static int	execute_commands(t_cmd *cmd_list, t_env **env_list, t_shell *shell)
+/* Helper to count commands in the list */
+static int count_commands(t_cmd *cmd_list)
 {
-	t_cmd	*current;
-	t_cmd	*prev;
-	int		exit_status = 0;
-	int		stdin_backup;
-	int		stdout_backup;
-	pid_t	*pids;
-	int		i;
-	int		num_cmds;
-
-	// Count number of commands
-	num_cmds = 0;
-	current = cmd_list;
+	int count = 0;
+	t_cmd *current = cmd_list;
 	while (current)
 	{
-		num_cmds++;
+		count++;
 		current = current->next;
 	}
+	return (count);
+}
 
-	// Allocate array for process IDs
-	pids = malloc(sizeof(pid_t) * num_cmds);
-	if (!pids)
-		return (1);
+/* Helper to check if a builtin MUST run in the parent */
+static int is_parent_builtin(const char *cmd_name)
+{
+	if (!cmd_name)
+		return (0);
+	return (ft_strcmp(cmd_name, "cd") == 0 ||
+			ft_strcmp(cmd_name, "export") == 0 ||
+			ft_strcmp(cmd_name, "unset") == 0 ||
+			ft_strcmp(cmd_name, "exit") == 0);
+}
 
-	if (!create_pipes(cmd_list))
-	{
-		free(pids);
-		return (1);
-	}
-
-	stdin_backup = dup(STDIN_FILENO);
-	stdout_backup = dup(STDOUT_FILENO);
-
-	// Execute each command in its own process
-	current = cmd_list;
-	prev = NULL;
-	i = 0;
-	while (current)
-	{
-		pids[i] = fork();
-		if (pids[i] == 0)
-		{
-			// Child process
-			// Close all pipe ends in child process
-			t_cmd *temp = cmd_list;
-			while (temp)
-			{
-				if (temp != current && temp != prev)
-				{
-					if (temp->pipe_fd[0] != -1)
-						close(temp->pipe_fd[0]);
-					if (temp->pipe_fd[1] != -1)
-						close(temp->pipe_fd[1]);
-				}
-				temp = temp->next;
-			}
-
-			// Set up input from previous command
-			if (prev)
-			{
-				if (prev->pipe_fd[0] != -1)
-				{
-					dup2(prev->pipe_fd[0], STDIN_FILENO);
-					close(prev->pipe_fd[0]);
-				}
-				if (prev->pipe_fd[1] != -1)
-					close(prev->pipe_fd[1]);
-			}
-
-			// Set up output to next command
-			if (current->next)
-			{
-				if (current->pipe_fd[1] != -1)
-				{
-					dup2(current->pipe_fd[1], STDOUT_FILENO);
-					close(current->pipe_fd[1]);
-				}
-				if (current->pipe_fd[0] != -1)
-					close(current->pipe_fd[0]);
-			}
-
-			if (!setup_redirections(current->redirects))
-				exit(1);
-
-			if (current->args && current->args[0])
-			{
-				if (is_builtin(current->args[0]))
-					exit(exec_builtin(current, env_list, shell));
-				else
-					exit(execute_external_cmd(current, *env_list));
-			}
-			exit(0);
-		}
-		else if (pids[i] < 0)
-		{
-			perror("fork");
-			goto cleanup;
-		}
-		prev = current;
-		current = current->next;
-		i++;
-	}
-
-	// Close all pipes in parent process
-	current = cmd_list;
+/* Helper to close all pipe fds in a command list */
+static void close_all_pipes(t_cmd *cmd_list)
+{
+	t_cmd *current = cmd_list;
 	while (current)
 	{
 		if (current->pipe_fd[0] != -1)
@@ -346,25 +349,172 @@ static int	execute_commands(t_cmd *cmd_list, t_env **env_list, t_shell *shell)
 		}
 		current = current->next;
 	}
+}
 
-	// Wait for all child processes
-	i = 0;
+/* Helper to wait for child processes and get last status */
+static int wait_for_children(pid_t *pids, int num_cmds)
+{
+	int i = 0;
+	int status = 0;
+	int last_status = 0;
+
 	while (i < num_cmds)
 	{
-		waitpid(pids[i], &exit_status, 0);
-		if (WIFEXITED(exit_status))
-			exit_status = WEXITSTATUS(exit_status);
+		waitpid(pids[i], &status, 0);
+		if (i == num_cmds - 1) // Store status of the last command
+		{
+			if (WIFEXITED(status))
+				last_status = WEXITSTATUS(status);
+			else if (WIFSIGNALED(status))
+				last_status = 128 + WTERMSIG(status); // Standard practice for signaled processes
+			else
+				last_status = 1; // Default error
+		}
 		i++;
 	}
+	return (last_status);
+}
 
-	// Restore stdin/stdout
-	dup2(stdin_backup, STDIN_FILENO);
-	dup2(stdout_backup, STDOUT_FILENO);
+/* 执行命令链表 */
+static int execute_commands(t_cmd *cmd_list, t_env **env_list, t_shell *shell)
+{
+	/* Variable declarations */
+	t_cmd   *current = NULL; /* Initialize current */
+	t_cmd   *prev = NULL;   /* Initialize prev */
+	int     exit_status;
+	int     stdin_backup;
+	int     stdout_backup;
+	pid_t   *pids;
+	int     i;
+	int     num_cmds;
+	char    *exit_str;
+	int     pipeline_error;
+	int     redir_status;
 
-cleanup:
-	close(stdin_backup);
-	close(stdout_backup);
-	free(pids);
+	/* Initialization */
+	exit_status = 0;
+	pids = NULL;
+	stdin_backup = -1;
+	stdout_backup = -1;
+	pipeline_error = 0;
+	redir_status = 1; /* Assume success initially */
+
+	stdin_backup = dup(STDIN_FILENO);
+	stdout_backup = dup(STDOUT_FILENO);
+	if (stdin_backup == -1 || stdout_backup == -1)
+	{
+		perror("dup initial fds");
+		exit_status = 1;
+		pipeline_error = 1;
+	}
+
+	if (!pipeline_error)
+	{
+		num_cmds = count_commands(cmd_list);
+		/* Special case: Single command that MUST run in parent */
+		if (num_cmds == 1 && cmd_list->args && cmd_list->args[0] &&
+			is_parent_builtin(cmd_list->args[0]))
+		{
+			redir_status = setup_redirections(cmd_list->redirects);
+			if (!redir_status)
+				exit_status = 1;
+			else
+				exit_status = exec_builtin(cmd_list, env_list, shell);
+			dup2(stdin_backup, STDIN_FILENO); /* Restore FDs */
+			dup2(stdout_backup, STDOUT_FILENO);
+		}
+		else /* Pipelines or commands that can/should run in a child */
+		{
+			/* Proceed directly to pipeline setup if no prior error */
+			if (!pipeline_error)
+			{
+				 pids = malloc(sizeof(pid_t) * num_cmds);
+				 if (!pids || (num_cmds > 1 && !create_pipes(cmd_list)))
+				 {
+					perror("malloc/pipe setup");
+					exit_status = 1;
+					pipeline_error = 1;
+				 }
+				 else
+				 { 
+					/* Fork loop */
+					current = cmd_list; 
+					prev = NULL;
+					i = 0;
+					while (current)
+					{
+						pids[i] = fork();
+						if (pids[i] == 0) /* Child process */
+						{
+							t_cmd *iter = cmd_list;
+							/* Child closes unneeded pipe ends */
+							while (iter)
+							{
+								if (iter != current && (!prev || iter != prev))
+								{ 
+									if(iter->pipe_fd[0] != -1) close(iter->pipe_fd[0]);
+									if(iter->pipe_fd[1] != -1) close(iter->pipe_fd[1]);
+								}
+								iter = iter->next;
+							}
+							if (prev && prev->pipe_fd[0] != -1)
+							{
+								dup2(prev->pipe_fd[0], STDIN_FILENO);
+								close(prev->pipe_fd[0]);
+								if(prev->pipe_fd[1] != -1) close(prev->pipe_fd[1]);
+							}
+							if (current->next && current->pipe_fd[1] != -1)
+							{
+								dup2(current->pipe_fd[1], STDOUT_FILENO);
+								close(current->pipe_fd[1]);
+								if(current->pipe_fd[0] != -1) close(current->pipe_fd[0]);
+							}
+							if (!setup_redirections(current->redirects))
+								exit(1);
+							if (current->args && current->args[0])
+							{
+								if (is_builtin(current->args[0]))
+									exit(exec_builtin(current, env_list, shell));
+								else
+									exit(execute_external_cmd(current, *env_list));
+							}
+							exit(0);
+						}
+						else if (pids[i] < 0) /* Fork error */
+						{
+							perror("fork");
+							exit_status = 1;
+							pipeline_error = 1;
+							break; 
+						}
+						/* Parent: Close pipes progressively */
+						if (prev && prev->pipe_fd[0] != -1) close(prev->pipe_fd[0]);
+						if (prev && prev->pipe_fd[1] != -1) close(prev->pipe_fd[1]);
+						prev = current;
+						current = current->next;
+						i++;
+					} 
+				 }
+			}
+			close_all_pipes(cmd_list); /* Parent closes all pipes */
+			if (!pipeline_error)
+				exit_status = wait_for_children(pids, num_cmds);
+			/* Restore original FDs */
+			dup2(stdin_backup, STDIN_FILENO);
+			dup2(stdout_backup, STDOUT_FILENO);
+		}
+	}
+	/* Cleanup */
+	if (stdin_backup != -1) close(stdin_backup);
+	if (stdout_backup != -1) close(stdout_backup);
+	if (pids) free(pids);
+	close_all_pipes(cmd_list); /* Final safety close */
+
+	/* Set $? */
+	exit_str = ft_itoa(exit_status);
+	set_env_value(env_list, "?", exit_str);
+	free(exit_str);
+
 	return (exit_status);
 }
 
