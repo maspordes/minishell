@@ -6,7 +6,7 @@
 /*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/05/12 22:36:52 by marrey           ###   ########.fr       */
+/*   Updated: 2025/05/13 16:00:57 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,8 @@ static void	add_token(t_token **tokens, t_token *new_token)
 	current->next = new_token;
 }
 
-/* 处理引号内的内容 */
+/* Commenting out unused function handle_quotes */
+/*
 static int	handle_quotes(char *input, int *i, char **word)
 {
 	char	quote;
@@ -64,6 +65,7 @@ static int	handle_quotes(char *input, int *i, char **word)
 	*word = ft_strjoin(*word, ft_substr(input, start, *i - start));
 	return (0);
 }
+*/
 
 /* 处理特殊字符 */
 static int	handle_special_char(char *input, int *i, t_token **tokens)
@@ -108,49 +110,56 @@ static int	handle_special_char(char *input, int *i, t_token **tokens)
 /* 处理单词或引用 */
 static void	handle_word(char *input, int *i, t_token **tokens)
 {
-	int		start;
-	char	*word_segment;
-	char	*quoted_word;
+	char	*final_word_value;
+	char	*segment;
+	int		segment_start_index;
+	char	quote_char;
 
-	start = *i;
-	// Case 1: Handle quoted segment if word starts with quote
-	if (input[start] == '\'' || input[start] == '\"')
+	final_word_value = ft_strdup("");
+	if (!final_word_value)
+		return; /* Malloc error */
+	while (input[*i] && input[*i] != ' ' && input[*i] != '\t' && \
+			input[*i] != '|' && input[*i] != '<' && input[*i] != '>')
 	{
-		quoted_word = ft_strdup("");
-		if (handle_quotes(input, i, &quoted_word)) // Advances i past closing quote
+		char *temp;
+		segment_start_index = *i;
+		segment = NULL;
+		if (input[*i] == '\'' || input[*i] == '\"')
 		{
-			// Add token even if empty ("" or '') - parser might need it
-			add_token(tokens, new_token(quoted_word, T_WORD));
-		}
-		else
-		{
-			// Unclosed quote: handle_quotes consumes rest of string and appends.
-			// Add the partial token. Consider signaling error later.
-			add_token(tokens, new_token(quoted_word, T_WORD));
-			// *i is already at end of string from handle_quotes
-		}
-	}
-	// Case 2: Handle unquoted word segment
-	else
-	{
-		// Consume characters until a delimiter (space, tab, |, <, >, quote, NUL)
-		while (input[*i] &&
-			   input[*i] != ' ' && input[*i] != '\t' &&
-			   input[*i] != '|' && input[*i] != '<' && input[*i] != '>' &&
-			   input[*i] != '\'' && input[*i] != '\"')
-		{
+			quote_char = input[*i];
 			(*i)++;
+			while (input[*i] && input[*i] != quote_char)
+				(*i)++;
+			if (input[*i] == quote_char)
+				(*i)++;
+			segment = ft_substr(input, segment_start_index, *i - segment_start_index);
 		}
-		// If we consumed any characters, add the segment
-		if (*i > start)
+		else /* Unquoted segment */
 		{
-			word_segment = ft_substr(input, start, *i - start);
-			add_token(tokens, new_token(word_segment, T_WORD));
+			while (input[*i] && input[*i] != ' ' && input[*i] != '\t' && \
+					input[*i] != '|' && input[*i] != '<' && input[*i] != '>' && \
+					input[*i] != '\'' && input[*i] != '\"')
+				(*i)++;
+			segment = ft_substr(input, segment_start_index, *i - segment_start_index);
 		}
-		// If *i == start, it means we started on a delimiter that wasn't handled
-		// by the main loop (shouldn't happen with current main loop logic).
+		if (segment)
+		{
+			temp = final_word_value;
+			final_word_value = ft_strjoin(temp, segment);
+			free(temp);
+			free(segment);
+			if (!final_word_value)
+				return; /* Malloc error */
+		}
+		else /* ft_substr likely failed or segment was empty */
+		{
+			break;
+		}
 	}
-	// Index 'i' is advanced by handle_quotes or the while loop here.
+	if (ft_strlen(final_word_value) > 0)
+		add_token(tokens, new_token(final_word_value, T_WORD));
+	else
+		free(final_word_value);
 }
 
 /* 词法分析主函数 */
