@@ -6,12 +6,13 @@
 /*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/05/12 22:37:26 by marrey           ###   ########.fr       */
+/*   Updated: 2025/05/13 16:19:06 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 #include <termios.h>
+#include <unistd.h> /* For isatty */
 
 int	g_signal_status = 0;
 
@@ -129,9 +130,20 @@ static void	setup_readline(void)
 {
 	struct termios	term;
 
-	tcgetattr(STDIN_FILENO, &term);
-	term.c_lflag &= ~ECHOCTL;
-	tcsetattr(STDIN_FILENO, TCSANOW, &term);
+	if (isatty(STDIN_FILENO)) /* Only setup if STDIN is a terminal */
+	{
+		if (tcgetattr(STDIN_FILENO, &term) == -1)
+		{
+			/* perror("minishell: tcgetattr failed"); */
+			return;
+		}
+		term.c_lflag &= ~ECHOCTL;
+		if (tcsetattr(STDIN_FILENO, TCSANOW, &term) == -1)
+		{
+			/* perror("minishell: tcsetattr failed"); */
+			/* No return, as failure might not be critical */
+		}
+	}
 }
 
 static void	handle_sigint_prompt(void)

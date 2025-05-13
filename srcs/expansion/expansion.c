@@ -6,7 +6,7 @@
 /*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 21:45:30 by marrey            #+#    #+#             */
-/*   Updated: 2025/05/12 21:57:24 by marrey           ###   ########.fr       */
+/*   Updated: 2025/05/13 16:08:24 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,13 +159,13 @@ static int expand_args(t_cmd *cmd, t_shell *shell)
 	current_args = cmd->args;
 	if (!current_args)
 		return (0);
-	state.new_cap = 10;
+	state.new_cap = 10; /* Initial capacity for new_args */
 	state.new_args = realloc_str_array(NULL, 0, state.new_cap);
 	if (!state.new_args)
 		return (-1);
 	state.new_count = 0;
 	state.old_idx = 0;
-	state.shell = shell; // Store shell context if needed by helpers
+	state.shell = shell;
 	while (current_args[state.old_idx])
 	{
 		expanded_single = perform_single_expansion(current_args[state.old_idx], state.shell);
@@ -174,12 +174,26 @@ static int expand_args(t_cmd *cmd, t_shell *shell)
 			free_str_array(state.new_args);
 			return (-1);
 		}
-		if (append_expanded_arg(expanded_single, &state) != 0)
-			return (-1);
+		/* If an argument expanded to an empty string, and it wasn't originally */
+		/* an explicit quoted empty string (like "" or ''), discard it. */
+		if (expanded_single[0] && *expanded_single[0] == '\0' &&
+		    (ft_strcmp(current_args[state.old_idx], "\"\"") != 0 &&
+		     ft_strcmp(current_args[state.old_idx], "''") != 0))
+		{
+			free_str_array(expanded_single); /* Discard and free the ["", NULL] */
+		}
+		else
+		{
+			if (append_expanded_arg(expanded_single, &state) != 0)
+			{
+				free_str_array(state.new_args); /* Ensure cleanup on error */
+				return (-1);
+			}
+		}
 		state.old_idx++;
 	}
 	state.new_args[state.new_count] = NULL;
-	free_str_array(cmd->args);
+	free_str_array(cmd->args); /* Free the old args array */
 	cmd->args = state.new_args;
 	return (0);
 }
