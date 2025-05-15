@@ -228,9 +228,15 @@ static int	execute_external_cmd(t_cmd *cmd, t_env *env_list)
 	int		status;
 
 	/* --- Handle empty command after expansion --- */
-	if (!cmd->args || !cmd->args[0] || *(cmd->args[0]) == '\0')
+	if (!cmd->args || !cmd->args[0])
 	{
 		return (0); /* No command to execute */
+	}
+	/* If the command is empty quotes, treat it as a command not found */
+	if (ft_strcmp(cmd->args[0], "\"\"") == 0 || ft_strcmp(cmd->args[0], "''") == 0)
+	{
+		print_error("minishell", cmd->args[0], "command not found");
+		return (127);
 	}
 	/* ------------------------------------------- */
 

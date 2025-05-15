@@ -271,4 +271,4 @@ int expand_command(t_cmd *cmd, t_shell *shell)
 	// the executor needs to handle cmd->args == NULL or cmd->args[0] == NULL.
 
 	return (0);
-} 
+}

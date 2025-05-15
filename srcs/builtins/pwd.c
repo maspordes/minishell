@@ -18,8 +18,18 @@
 */
 int	ft_pwd(void)
 {
-	char	cwd[PATH_MAX]; /* Use PATH_MAX for better buffer size */
+	char	cwd[PATH_MAX];
+	char	*pwd_env;
 
+	/* First try to use PWD environment variable */
+	pwd_env = getenv("PWD");
+	if (pwd_env)
+	{
+		printf("%s\n", pwd_env);
+		return (0);
+	}
+
+	/* Fallback to getcwd if PWD is not set */
 	if (getcwd(cwd, sizeof(cwd)) != NULL)
 	{
 		printf("%s\n", cwd);
