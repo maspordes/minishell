@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marrey <marrey@student.42.fr>              +#+  +:+       +#+         #
+#    By: shutan <shutan@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/01 00:00:00 by user              #+#    #+#              #
-#    Updated: 2025/05/12 22:02:50 by marrey           ###   ########.fr        #
+#    Updated: 2025/05/19 21:07:50 by shutan           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,13 +38,17 @@ SRCS = $(SRCS_PATH)/main.c \
        $(SRCS_PATH)/executor/filename_utils.c \
        $(SRCS_PATH)/builtins/echo.c \
        $(SRCS_PATH)/builtins/cd.c \
+       $(SRCS_PATH)/builtins/cd_utils.c \
        $(SRCS_PATH)/builtins/pwd.c \
        $(SRCS_PATH)/builtins/export.c \
        $(SRCS_PATH)/builtins/unset.c \
        $(SRCS_PATH)/builtins/env.c \
        $(SRCS_PATH)/builtins/exit.c \
+       $(SRCS_PATH)/builtins/exit_utils.c \
        $(SRCS_PATH)/signals/signals.c \
        $(SRCS_PATH)/env/env.c \
+       $(SRCS_PATH)/env/env_operations.c \
+       $(SRCS_PATH)/env/env_utils.c \
        $(SRCS_PATH)/utils/error_utils.c
 
 # 目标文件
@@ -75,4 +79,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re 
+.PHONY: all clean fclean re

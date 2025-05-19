@@ -1,40 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pwd.c                                              :+:      :+:    :+:   */
+/*   cd_utils.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/05 00:54:35 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/19 20:58:54 by shutan           ###   ########.fr       */
+/*   Created: 2025/05/19 20:31:27 by shutan            #+#    #+#             */
+/*   Updated: 2025/05/19 20:32:02 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../includes/minishell.h"
+#ifndef CD_UTILS_H
+# define CD_UTILS_H
 
-/*
-** pwd 命令的实现
-** Should always print the actual current working directory
-*/
-int	ft_pwd(void)
-{
-	char	cwd[PATH_MAX];
-	char	*pwd_env;
+# include "../../includes/minishell.h"
 
-	pwd_env = getenv("PWD");
-	if (pwd_env)
-	{
-		printf("%s\n", pwd_env);
-		return (0);
-	}
-	if (getcwd(cwd, sizeof(cwd)) != NULL)
-	{
-		printf("%s\n", cwd);
-		return (0);
-	}
-	else
-	{
-		perror("minishell: pwd");
-		return (1);
-	}
-}
+char	*get_home_path(t_env *env_list);
+char	*get_oldpwd_path(t_env *env_list);
+char	*get_target_path(char **args, t_env *env_list);
+int		handle_cd_error(char *target_path, char *old_pwd_val, char **args);
+char	*get_old_pwd(t_env *env_list);
+
+#endif

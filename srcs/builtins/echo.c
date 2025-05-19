@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   echo.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/12 22:19:03 by marrey           ###   ########.fr       */
+/*   Updated: 2025/05/19 20:33:59 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ int	ft_echo(char **args, t_env *env_list)
 	int		i;
 	int		n_option;
 
-	(void)env_list; /* env_list is no longer needed if we don't expand here */
+	(void)env_list;
 	n_option = 0;
 	i = 1;
 	while (args[i] && is_n_option(args[i]))
@@ -45,7 +45,7 @@ int	ft_echo(char **args, t_env *env_list)
 	}
 	while (args[i])
 	{
-		printf("%s", args[i]); /* Print the argument directly */
+		printf("%s", args[i]);
 		if (args[i + 1])
 			printf(" ");
 		i++;

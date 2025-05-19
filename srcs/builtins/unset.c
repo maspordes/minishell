@@ -3,32 +3,42 @@
 /*                                                        :::      ::::::::   */
 /*   unset.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/05 00:46:15 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/19 21:01:30 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
-/* 从环境变量列表中删除指定的键 */
+static void	free_env_node(t_env *node)
+{
+	free(node->key);
+	if (node->value)
+		free(node->value);
+	free(node);
+}
+
+static void	remove_first_env(t_env **env_list)
+{
+	t_env	*to_free;
+
+	to_free = *env_list;
+	*env_list = (*env_list)->next;
+	free_env_node(to_free);
+}
+
 static void	remove_env(t_env **env_list, char *key)
 {
 	t_env	*current;
 	t_env	*prev;
-	t_env	*to_free;
 
 	if (!*env_list)
 		return ;
 	if (ft_strcmp((*env_list)->key, key) == 0)
 	{
-		to_free = *env_list;
-		*env_list = (*env_list)->next;
-		free(to_free->key);
-		if (to_free->value)
-			free(to_free->value);
-		free(to_free);
+		remove_first_env(env_list);
 		return ;
 	}
 	prev = *env_list;
@@ -38,10 +48,7 @@ static void	remove_env(t_env **env_list, char *key)
 		if (ft_strcmp(current->key, key) == 0)
 		{
 			prev->next = current->next;
-			free(current->key);
-			if (current->value)
-				free(current->value);
-			free(current);
+			free_env_node(current);
 			return ;
 		}
 		prev = current;
@@ -49,7 +56,6 @@ static void	remove_env(t_env **env_list, char *key)
 	}
 }
 
-/* 验证环境变量名是否有效 */
 static int	validate_env_key(char *key)
 {
 	int	i;
@@ -86,4 +92,4 @@ int	ft_unset(char **args, t_env **env_list)
 		i++;
 	}
 	return (ret);
-} 
+}

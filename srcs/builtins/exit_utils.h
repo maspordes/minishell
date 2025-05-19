@@ -1,40 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pwd.c                                              :+:      :+:    :+:   */
+/*   exit_utils.h                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/05 00:54:35 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/19 20:58:54 by shutan           ###   ########.fr       */
+/*   Created: 2025/05/19 20:37:15 by shutan            #+#    #+#             */
+/*   Updated: 2025/05/19 20:38:01 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../includes/minishell.h"
+#ifndef EXIT_UTILS_H
+# define EXIT_UTILS_H
 
-/*
-** pwd 命令的实现
-** Should always print the actual current working directory
-*/
-int	ft_pwd(void)
-{
-	char	cwd[PATH_MAX];
-	char	*pwd_env;
+# include "../../includes/minishell.h"
 
-	pwd_env = getenv("PWD");
-	if (pwd_env)
-	{
-		printf("%s\n", pwd_env);
-		return (0);
-	}
-	if (getcwd(cwd, sizeof(cwd)) != NULL)
-	{
-		printf("%s\n", cwd);
-		return (0);
-	}
-	else
-	{
-		perror("minishell: pwd");
-		return (1);
-	}
-}
+char	*clean_quoted_str(const char *str);
+int		check_numeric_chars(const char *str);
+int		is_numeric_argument(const char *str);
+long	ft_atol(const char *str);
+char	*get_key_from_str(const char *str);
+int		validate_exit_args(char **args, char **clean_arg);
+int		handle_exit_args(char **args, long *exit_code);
+
+#endif
