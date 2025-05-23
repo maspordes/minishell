@@ -6,7 +6,7 @@
 #    By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/01 00:00:00 by user              #+#    #+#              #
-#    Updated: 2025/05/23 22:57:51 by shutan           ###   ########.fr        #
+#    Updated: 2025/05/24 00:41:05 by shutan           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -43,6 +43,7 @@ SRCS = $(SRCS_PATH)/main.c \
        $(SRCS_PATH)/expansion/variable_expansion.c \
        $(SRCS_PATH)/expansion/quote_removal.c \
        $(SRCS_PATH)/expansion/expansion_utils.c \
+       $(SRCS_PATH)/expansion/expansion_helpers.c \
        $(SRCS_PATH)/executor/executor.c \
        $(SRCS_PATH)/executor/executor_utils.c \
        $(SRCS_PATH)/executor/heredoc.c \
@@ -63,6 +64,7 @@ SRCS = $(SRCS_PATH)/main.c \
        $(SRCS_PATH)/builtins/env.c \
        $(SRCS_PATH)/builtins/exit.c \
        $(SRCS_PATH)/builtins/exit_utils.c \
+       $(SRCS_PATH)/builtins/exit_validation.c \
        $(SRCS_PATH)/signals/signals.c \
        $(SRCS_PATH)/env/env.c \
        $(SRCS_PATH)/env/env_operations.c \

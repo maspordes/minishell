@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 23:10:23 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/23 23:53:36 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ static int	skip_variable_name(char *str, int i)
 	return (i);
 }
 
-static char	*process_variable(char *str, int *i, t_env *env_list,
+char	*process_variable(char *str, int *i, t_env *env_list,
 	int exit_status)
 {
 	char	*key;
@@ -58,7 +58,6 @@ static char	*process_variable(char *str, int *i, t_env *env_list,
 	}
 	else
 	{
-		(*i)--;
 		return (ft_strdup("$"));
 	}
 	value = get_variable_value(key, env_list, exit_status);
@@ -70,33 +69,15 @@ static char	*process_variable(char *str, int *i, t_env *env_list,
 
 char	*expand_variables(char *str, t_env *env_list, int exit_status)
 {
-	char	*expanded;
-	char	*value;
-	int		i;
-	int		in_single_quote;
-	int		in_double_quote;
+	char			*expanded;
+	t_expand_data	data;
+	t_expand_state	state;
 
+	data.env_list = env_list;
+	data.exit_status = exit_status;
+	state.i = 0;
+	state.in_single_quote = 0;
+	state.in_double_quote = 0;
 	expanded = ft_strdup("");
-	i = 0;
-	in_single_quote = 0;
-	in_double_quote = 0;
-	while (str[i])
-	{
-		if (str[i] == '\'' && !in_double_quote)
-			in_single_quote = !in_single_quote;
-		else if (str[i] == '"' && !in_single_quote)
-			in_double_quote = !in_double_quote;
-		else if (str[i] == '$' && str[i + 1] && !in_single_quote)
-		{
-			value = process_variable(str, &i, env_list, exit_status);
-			if (value)
-			{
-				expanded = ft_strjoin_free(expanded, value);
-				free(value);
-			}
-			continue;
-		}
-		expanded = ft_strjoin_char(expanded, str[i++]);
-	}
-	return (expanded);
+	return (process_expansion_loop(str, expanded, &data, &state));
 }

@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/05/23 23:03:37 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/23 23:54:29 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,6 +97,21 @@ typedef struct s_exec_data
 	t_shell	*shell;
 }	t_exec_data;
 
+/* 扩展数据结构 */
+typedef struct s_expand_data
+{
+	t_env	*env_list;
+	int		exit_status;
+}	t_expand_data;
+
+/* 扩展状态结构 */
+typedef struct s_expand_state
+{
+	int	i;
+	int	in_single_quote;
+	int	in_double_quote;
+}	t_expand_state;
+
 /* 函数原型 */
 
 /* 词法分析器 */
@@ -126,7 +141,7 @@ int		setup_redirections(t_redirect *redirects);
 int		is_parent_builtin(const char *cmd_name);
 int		is_single_parent_builtin(t_cmd *cmd_list, int num_cmds);
 int		execute_builtin_command(t_cmd *cmd_list, t_env **env_list,
-		t_shell *shell);
+			t_shell *shell);
 int		handle_input_redirect(char *filename);
 int		handle_output_redirect(char *filename);
 int		handle_append_redirect(char *filename);
@@ -190,6 +205,11 @@ void	rl_on_new_line(void);
 int		expand_command(t_cmd *cmd, t_shell *shell);
 char	*expand_variables_in_str(char *str, t_shell *shell);
 char	*remove_quotes_from_str(char *str);
+char	*process_variable(char *str, int *i, t_env *env_list, int exit_status);
+char	*handle_variable_expansion(char *str, int *i, char *expanded,
+			t_expand_data *data);
+char	*process_expansion_loop(char *str, char *expanded,
+			t_expand_data *data, t_expand_state *state);
 
 /* Parser module */
 t_cmd	*parser(t_token *tokens);

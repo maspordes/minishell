@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 20:37:15 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 23:23:24 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/24 00:41:05 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,41 +67,6 @@ char	*get_key_from_str(const char *str)
 		i++;
 	key = ft_substr(str, 0, i);
 	return (key);
-}
-
-int	validate_exit_args(char **args, char **clean_arg)
-{
-	if (!args[1])
-		return (0);
-	*clean_arg = NULL;
-	if (args[1][0] == '"' || args[1][0] == '\'')
-	{
-		*clean_arg = ft_substr(args[1], 1, ft_strlen(args[1]) - 2);
-		if (!*clean_arg)
-			return (255);
-	}
-	if (!is_numeric_argument(args[1]))
-	{
-		fprintf(stderr, "minishell: exit: %s: numeric argument required\n",
-			args[1]);
-		if (*clean_arg)
-		{
-			free(*clean_arg);
-			*clean_arg = NULL;
-		}
-		return (2);
-	}
-	if (args[2])
-	{
-		fprintf(stderr, "minishell: exit: too many arguments\n");
-		if (*clean_arg)
-		{
-			free(*clean_arg);
-			*clean_arg = NULL;
-		}
-		return (1);
-	}
-	return (0);
 }
 
 int	handle_exit_args(char **args, long *exit_code)
