@@ -1,42 +1,55 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   string_utils.c                                     :+:      :+:    :+:   */
+/*   lexer_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 22:48:29 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/23 22:01:13 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
-char	*ft_strjoin_free(char *s1, const char *s2)
+t_token	*new_token(char *value, t_token_type type)
 {
-	char	*result;
+	t_token	*token;
 
-	if (!s1 || !s2)
+	token = (t_token *)malloc(sizeof(t_token));
+	if (!token)
 		return (NULL);
-	result = ft_strjoin(s1, s2);
-	free(s1);
-	return (result);
+	token->value = value;
+	token->type = type;
+	token->next = NULL;
+	return (token);
 }
 
-char	*ft_strjoin_char(char *s1, char c)
+void	add_token(t_token **tokens, t_token *new_token)
 {
-	char	*result;
-	int		len;
+	t_token	*current;
 
-	if (!s1)
-		return (NULL);
-	len = ft_strlen(s1);
-	result = malloc(len + 2);
-	if (!result)
-		return (NULL);
-	ft_memcpy(result, s1, len);
-	result[len] = c;
-	result[len + 1] = '\0';
-	free(s1);
-	return (result);
+	if (!*tokens)
+	{
+		*tokens = new_token;
+		return ;
+	}
+	current = *tokens;
+	while (current->next)
+		current = current->next;
+	current->next = new_token;
+}
+
+void	free_tokens(t_token *tokens)
+{
+	t_token	*tmp;
+
+	while (tokens)
+	{
+		tmp = tokens;
+		tokens = tokens->next;
+		if (tmp->value)
+			free(tmp->value);
+		free(tmp);
+	}
 }

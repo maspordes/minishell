@@ -1,26 +1,51 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   error_utils.c                                      :+:      :+:    :+:   */
+/*   pipe_handler.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 22:10:52 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/23 21:53:45 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
-void	print_error(const char *prefix, const char *arg, const char *message)
+int	create_pipes(t_cmd *cmd_list)
 {
-	ft_putstr_fd((char *)prefix, STDERR_FILENO);
-	ft_putstr_fd(": ", STDERR_FILENO);
-	if (arg)
+	t_cmd	*current;
+
+	current = cmd_list;
+	while (current && current->next)
 	{
-		ft_putstr_fd((char *)arg, STDERR_FILENO);
-		ft_putstr_fd(": ", STDERR_FILENO);
+		if (pipe(current->pipe_fd) == -1)
+		{
+			perror("pipe");
+			return (0);
+		}
+		current = current->next;
 	}
-	ft_putstr_fd((char *)message, STDERR_FILENO);
-	ft_putstr_fd("\n", STDERR_FILENO);
+	return (1);
+}
+
+void	close_all_pipes(t_cmd *cmd_list)
+{
+	t_cmd	*current;
+
+	current = cmd_list;
+	while (current)
+	{
+		if (current->pipe_fd[0] != -1)
+		{
+			close(current->pipe_fd[0]);
+			current->pipe_fd[0] = -1;
+		}
+		if (current->pipe_fd[1] != -1)
+		{
+			close(current->pipe_fd[1]);
+			current->pipe_fd[1] = -1;
+		}
+		current = current->next;
+	}
 }

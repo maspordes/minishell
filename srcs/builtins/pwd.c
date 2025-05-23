@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   pwd.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 00:54:35 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/19 20:58:54 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/23 21:53:45 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
+#include <limits.h>
 
 /*
 ** pwd 命令的实现

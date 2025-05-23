@@ -1,26 +1,50 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   error_utils.c                                      :+:      :+:    :+:   */
+/*   process_handler.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 22:10:52 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/23 21:53:54 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
-void	print_error(const char *prefix, const char *arg, const char *message)
+int	count_commands(t_cmd *cmd_list)
 {
-	ft_putstr_fd((char *)prefix, STDERR_FILENO);
-	ft_putstr_fd(": ", STDERR_FILENO);
-	if (arg)
+	int		count;
+	t_cmd	*current;
+
+	count = 0;
+	current = cmd_list;
+	while (current)
 	{
-		ft_putstr_fd((char *)arg, STDERR_FILENO);
-		ft_putstr_fd(": ", STDERR_FILENO);
+		count++;
+		current = current->next;
 	}
-	ft_putstr_fd((char *)message, STDERR_FILENO);
-	ft_putstr_fd("\n", STDERR_FILENO);
+	return (count);
+}
+
+int	wait_for_children(pid_t *pids, int num_cmds)
+{
+	int	i;
+	int	status;
+	int	last_status;
+
+	i = 0;
+	last_status = 0;
+	while (i < num_cmds)
+	{
+		waitpid(pids[i], &status, 0);
+		if (WIFEXITED(status))
+			last_status = WEXITSTATUS(status);
+		else if (WIFSIGNALED(status))
+			last_status = 128 + WTERMSIG(status);
+		else
+			last_status = 1;
+		i++;
+	}
+	return (last_status);
 }

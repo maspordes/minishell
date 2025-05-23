@@ -5,75 +5,41 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/01/01 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/05 00:46:15 by shutan           ###   ########.fr       */
+/*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
+/*   Updated: 2025/05/23 22:49:31 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
-/* 释放字符串数组 */
-void	free_array(char **array)
+int	is_single_parent_builtin(t_cmd *cmd_list, int num_cmds)
 {
-	int	i;
-
-	if (!array)
-		return ;
-	i = 0;
-	while (array[i])
-	{
-		free(array[i]);
-		i++;
-	}
-	free(array);
+	return (num_cmds == 1 && cmd_list->args && cmd_list->args[0]
+		&& is_parent_builtin(cmd_list->args[0]));
 }
 
-/* 展开环境变量 */
-char	*expand_variables(char *str, t_env *env_list, int exit_status)
+static int	execute_single_builtin(t_cmd *cmd, t_env **env_list, t_shell *shell)
 {
-	int		i;
-	int		in_quotes;
-	char	*result;
-	char	*var_name;
-	char	*var_value;
+	int	exit_status;
+	int	stdin_backup;
+	int	stdout_backup;
 
-	if (!str)
-		return (NULL);
-	result = ft_strdup("");
-	i = 0;
-	in_quotes = 0;
-	while (str[i])
-	{
-		if (str[i] == '\'')
-			in_quotes = !in_quotes;
-		else if (str[i] == '$' && !in_quotes)
-		{
-			i++;
-			if (str[i] == '?')
-			{
-				var_value = ft_itoa(exit_status);
-				result = ft_strjoin(result, var_value);
-				free(var_value);
-				i++;
-			}
-			else if (ft_isalpha(str[i]) || str[i] == '_')
-			{
-				var_name = ft_strdup("");
-				while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
-				{
-					var_name = ft_stradd_char(var_name, str[i]);
-					i++;
-				}
-				var_value = get_env_value(env_list, var_name);
-				if (var_value)
-					result = ft_strjoin(result, var_value);
-				free(var_name);
-			}
-			else
-				result = ft_stradd_char(result, '$');
-		}
-		else
-			result = ft_stradd_char(result, str[i++]);
-	}
-	return (result);
-} 
+	stdin_backup = dup(STDIN_FILENO);
+	stdout_backup = dup(STDOUT_FILENO);
+	if (stdin_backup == -1 || stdout_backup == -1)
+		return (1);
+	if (!setup_redirections(cmd->redirects))
+		exit_status = 1;
+	else
+		exit_status = exec_builtin(cmd, env_list, shell);
+	dup2(stdin_backup, STDIN_FILENO);
+	dup2(stdout_backup, STDOUT_FILENO);
+	close(stdin_backup);
+	close(stdout_backup);
+	return (exit_status);
+}
+
+int	execute_builtin_command(t_cmd *cmd_list, t_env **env_list, t_shell *shell)
+{
+	return (execute_single_builtin(cmd_list, env_list, shell));
+}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/05/12 22:29:35 by marrey           ###   ########.fr       */
+/*   Updated: 2025/05/23 23:03:37 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,21 +89,48 @@ typedef struct s_shell
 	int		exit_status;
 }	t_shell;
 
+/* 执行器数据结构 */
+typedef struct s_exec_data
+{
+	t_cmd	*cmd_list;
+	t_env	**env_list;
+	t_shell	*shell;
+}	t_exec_data;
+
 /* 函数原型 */
 
 /* 词法分析器 */
 t_token	*lexer(char *input);
 void	free_tokens(t_token *tokens);
+t_token	*new_token(char *value, t_token_type type);
+void	add_token(t_token **tokens, t_token *new_token);
+int		handle_special_char(char *input, int *i, t_token **tokens);
+void	handle_word(char *input, int *i, t_token **tokens);
 
 /* 语法分析器 */
 t_cmd	*parser(t_token *tokens);
 void	free_cmds(t_cmd *cmds);
+t_cmd	*new_cmd(void);
+t_redirect	*new_redirect(int type, char *file);
+void	add_redirect(t_cmd *cmd, t_redirect *redirect);
+int		handle_redirect(t_token **token, t_cmd *cmd);
+int		add_arg(t_cmd *cmd, char *arg);
+t_cmd	*handle_pipe(t_token **token, t_cmd *cmd);
 
 /* 执行器 */
 int		executor(t_cmd *cmd_list, t_env **env_list, t_shell *shell);
 char	*find_executable(char *cmd, t_env *env_list);
 void	free_array(char **array);
 int		handle_heredoc(char *delimiter);
+int		setup_redirections(t_redirect *redirects);
+int		is_parent_builtin(const char *cmd_name);
+int		is_single_parent_builtin(t_cmd *cmd_list, int num_cmds);
+int		execute_builtin_command(t_cmd *cmd_list, t_env **env_list,
+		t_shell *shell);
+int		handle_input_redirect(char *filename);
+int		handle_output_redirect(char *filename);
+int		handle_append_redirect(char *filename);
+int		handle_heredoc_redirect(char *delimiter);
 
 /* 内置命令 */
 int		ft_echo(char **args, t_env *env_list);
@@ -137,8 +164,17 @@ void	print_error(const char *prefix, const char *arg, const char *message);
 /* Filename Utils */
 char	*process_filename_quotes(const char *raw_filename);
 
-/* 添加到函数原型部分 */
+/* Main module functions */
+t_shell	*init_shell(char **envp);
+void	clean_current_command(t_shell *shell);
 void	free_shell(t_shell *shell);
+void	setup_readline(void);
+void	handle_sigint_prompt(void);
+char	*read_input(void);
+int		execute_pipeline(t_shell *shell);
+int		process_input(t_shell *shell);
+
+/* Other utility functions */
 void	print_export_env(t_env *env_list);
 char	*get_key_from_str(const char *str);
 
@@ -147,6 +183,7 @@ char	*get_key_from_str(const char *str);
 /* 在 Linux 上声明 readline 函数 */
 void	rl_replace_line(const char *text, int clear_undo);
 void	rl_redisplay(void);
+void	rl_on_new_line(void);
 # endif
 
 /* Expansion module */

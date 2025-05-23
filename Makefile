@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: shutan <shutan@student.42.fr>              +#+  +:+       +#+         #
+#    By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/01 00:00:00 by user              #+#    #+#              #
-#    Updated: 2025/05/19 21:07:50 by shutan           ###   ########.fr        #
+#    Updated: 2025/05/23 22:57:51 by shutan           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,14 +28,32 @@ SRCS_PATH = ./srcs
 
 # 源文件
 SRCS = $(SRCS_PATH)/main.c \
+       $(SRCS_PATH)/main/main_utils.c \
+       $(SRCS_PATH)/main/input_handler.c \
+       $(SRCS_PATH)/main/command_processor.c \
        $(SRCS_PATH)/lexer/lexer.c \
+       $(SRCS_PATH)/lexer/lexer_utils.c \
+       $(SRCS_PATH)/lexer/lexer_special.c \
+       $(SRCS_PATH)/lexer/lexer_word.c \
        $(SRCS_PATH)/parser/parser.c \
+       $(SRCS_PATH)/parser/parser_utils.c \
+       $(SRCS_PATH)/parser/parser_redirect.c \
+       $(SRCS_PATH)/parser/parser_args.c \
        $(SRCS_PATH)/expansion/expansion.c \
        $(SRCS_PATH)/expansion/variable_expansion.c \
        $(SRCS_PATH)/expansion/quote_removal.c \
+       $(SRCS_PATH)/expansion/expansion_utils.c \
        $(SRCS_PATH)/executor/executor.c \
+       $(SRCS_PATH)/executor/executor_utils.c \
        $(SRCS_PATH)/executor/heredoc.c \
        $(SRCS_PATH)/executor/filename_utils.c \
+       $(SRCS_PATH)/executor/builtin_handler.c \
+       $(SRCS_PATH)/executor/pipe_handler.c \
+       $(SRCS_PATH)/executor/pipe_setup.c \
+       $(SRCS_PATH)/executor/redirection_handler.c \
+       $(SRCS_PATH)/executor/redirection_utils.c \
+       $(SRCS_PATH)/executor/external_cmd.c \
+       $(SRCS_PATH)/executor/process_handler.c \
        $(SRCS_PATH)/builtins/echo.c \
        $(SRCS_PATH)/builtins/cd.c \
        $(SRCS_PATH)/builtins/cd_utils.c \
@@ -49,7 +67,8 @@ SRCS = $(SRCS_PATH)/main.c \
        $(SRCS_PATH)/env/env.c \
        $(SRCS_PATH)/env/env_operations.c \
        $(SRCS_PATH)/env/env_utils.c \
-       $(SRCS_PATH)/utils/error_utils.c
+       $(SRCS_PATH)/utils/error_utils.c \
+       $(SRCS_PATH)/utils/string_utils.c
 
 # 目标文件
 OBJS = $(SRCS:.c=.o)
