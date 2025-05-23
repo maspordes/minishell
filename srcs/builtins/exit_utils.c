@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exit_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 20:37:15 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/19 20:41:02 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/23 23:23:24 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,13 +84,21 @@ int	validate_exit_args(char **args, char **clean_arg)
 	{
 		fprintf(stderr, "minishell: exit: %s: numeric argument required\n",
 			args[1]);
-		free(*clean_arg);
+		if (*clean_arg)
+		{
+			free(*clean_arg);
+			*clean_arg = NULL;
+		}
 		return (2);
 	}
 	if (args[2])
 	{
 		fprintf(stderr, "minishell: exit: too many arguments\n");
-		free(*clean_arg);
+		if (*clean_arg)
+		{
+			free(*clean_arg);
+			*clean_arg = NULL;
+		}
 		return (1);
 	}
 	return (0);
@@ -101,17 +109,25 @@ int	handle_exit_args(char **args, long *exit_code)
 	char	*clean_arg;
 	int		result;
 
+	clean_arg = NULL;
 	result = validate_exit_args(args, &clean_arg);
 	if (result)
 		return (result);
-	if (clean_arg)
-		*exit_code = ft_atol(clean_arg);
+	if (args[1])
+	{
+		if (clean_arg)
+		{
+			*exit_code = ft_atol(clean_arg);
+			free(clean_arg);
+		}
+		else
+			*exit_code = ft_atol(args[1]);
+		if (*exit_code < 0 || *exit_code > 255)
+			*exit_code %= 256;
+		if (*exit_code < 0)
+			*exit_code += 256;
+	}
 	else
-		*exit_code = ft_atol(args[1]);
-	free(clean_arg);
-	if (*exit_code < 0 || *exit_code > 255)
-		*exit_code %= 256;
-	if (*exit_code < 0)
-		*exit_code += 256;
+		*exit_code = 0;
 	return (0);
 }
