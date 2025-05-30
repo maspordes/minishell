@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 23:50:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 23:53:22 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/24 12:12:43 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ static int	check_numeric_arg(char **args, char **clean_arg)
 		fprintf(stderr, "minishell: exit: %s: numeric argument required\n",
 			args[1]);
 		cleanup_clean_arg(clean_arg);
-		return (2);
+		return (255);
 	}
 	return (0);
 }

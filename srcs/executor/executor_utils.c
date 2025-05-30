@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 22:49:31 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/24 12:16:05 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ static int	execute_single_builtin(t_cmd *cmd, t_env **env_list, t_shell *shell)
 		return (1);
 	if (!setup_redirections(cmd->redirects))
 		exit_status = 1;
+	else if (!cmd->args || !cmd->args[0])
+		exit_status = 0;
 	else
 		exit_status = exec_builtin(cmd, env_list, shell);
 	dup2(stdin_backup, STDIN_FILENO);

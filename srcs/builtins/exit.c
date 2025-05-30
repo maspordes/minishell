@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exit.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 00:54:57 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/19 20:41:05 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/24 12:23:08 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ int	ft_exit(char **args, t_shell *shell)
 	result = handle_exit_args(args, &exit_code);
 	if (result == 1)
 		return (1);
+	if (result == 255)
+		exit(255);
 	exit(exit_code);
 }
 

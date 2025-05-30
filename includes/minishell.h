@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/05/23 23:54:29 by shutan           ###   ########.fr       */
+/*   Created: 2025/05/26 19:24:50 by shutan            #+#    #+#             */
+/*   Updated: 2025/05/26 19:24:50 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,7 @@ void	handle_word(char *input, int *i, t_token **tokens);
 t_cmd	*parser(t_token *tokens);
 void	free_cmds(t_cmd *cmds);
 t_cmd	*new_cmd(void);
-t_redirect	*new_redirect(int type, char *file);
+t_redirect		*new_redirect(int type, char *file);
 void	add_redirect(t_cmd *cmd, t_redirect *redirect);
 int		handle_redirect(t_token **token, t_cmd *cmd);
 int		add_arg(t_cmd *cmd, char *arg);
@@ -210,6 +210,12 @@ char	*handle_variable_expansion(char *str, int *i, char *expanded,
 			t_expand_data *data);
 char	*process_expansion_loop(char *str, char *expanded,
 			t_expand_data *data, t_expand_state *state);
+char	**create_empty_result(void);
+char	**create_single_result(char *str);
+void	free_str_array(char **array);
+void	cleanup_args_on_error(char **new_args, int j);
+char	**perform_single_expansion(char *token, t_shell *shell);
+int		process_single_arg(char **new_args, int *j, char *arg, t_shell *shell);
 
 /* Parser module */
 t_cmd	*parser(t_token *tokens);

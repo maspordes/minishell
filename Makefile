@@ -6,7 +6,7 @@
 #    By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/01 00:00:00 by user              #+#    #+#              #
-#    Updated: 2025/05/24 00:41:05 by shutan           ###   ########.fr        #
+#    Updated: 2025/05/24 12:37:10 by shutan           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -44,6 +44,7 @@ SRCS = $(SRCS_PATH)/main.c \
        $(SRCS_PATH)/expansion/quote_removal.c \
        $(SRCS_PATH)/expansion/expansion_utils.c \
        $(SRCS_PATH)/expansion/expansion_helpers.c \
+       $(SRCS_PATH)/expansion/expansion_memory.c \
        $(SRCS_PATH)/executor/executor.c \
        $(SRCS_PATH)/executor/executor_utils.c \
        $(SRCS_PATH)/executor/heredoc.c \

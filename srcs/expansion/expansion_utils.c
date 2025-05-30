@@ -6,11 +6,47 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 23:53:36 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/24 12:38:35 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
+
+char	**perform_single_expansion(char *token, t_shell *shell)
+{
+	char	*vars_expanded_token;
+	char	*quotes_removed_token;
+
+	vars_expanded_token = expand_variables_in_str(token, shell);
+	if (!vars_expanded_token)
+		return (NULL);
+	quotes_removed_token = remove_quotes_from_str(vars_expanded_token);
+	free(vars_expanded_token);
+	if (!quotes_removed_token)
+		return (NULL);
+	if (*quotes_removed_token == '\0')
+	{
+		free(quotes_removed_token);
+		return (create_empty_result());
+	}
+	return (create_single_result(quotes_removed_token));
+}
+
+int	process_single_arg(char **new_args, int *j, char *arg, t_shell *shell)
+{
+	char	**expanded;
+
+	expanded = perform_single_expansion(arg, shell);
+	if (!expanded)
+		return (-1);
+	if (expanded[0] != NULL)
+	{
+		new_args[*j] = expanded[0];
+		(*j)++;
+	}
+	free(expanded);
+	return (0);
+}
 
 static char	*get_variable_value(char *key, t_env *env_list, int exit_status)
 {
@@ -65,19 +101,4 @@ char	*process_variable(char *str, int *i, t_env *env_list,
 	if (!value)
 		return (ft_strdup(""));
 	return (value);
-}
-
-char	*expand_variables(char *str, t_env *env_list, int exit_status)
-{
-	char			*expanded;
-	t_expand_data	data;
-	t_expand_state	state;
-
-	data.env_list = env_list;
-	data.exit_status = exit_status;
-	state.i = 0;
-	state.in_single_quote = 0;
-	state.in_double_quote = 0;
-	expanded = ft_strdup("");
-	return (process_expansion_loop(str, expanded, &data, &state));
 }

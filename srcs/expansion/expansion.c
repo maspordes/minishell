@@ -6,50 +6,11 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/12 21:45:30 by marrey            #+#    #+#             */
-/*   Updated: 2025/05/23 23:06:21 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/24 12:31:41 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
-
-static char	**perform_single_expansion(char *token, t_shell *shell)
-{
-	char	*vars_expanded_token;
-	char	*quotes_removed_token;
-	char	**result_array;
-
-	vars_expanded_token = expand_variables_in_str(token, shell);
-	if (!vars_expanded_token)
-		return (NULL);
-	quotes_removed_token = remove_quotes_from_str(vars_expanded_token);
-	free(vars_expanded_token);
-	if (!quotes_removed_token)
-		return (NULL);
-	result_array = malloc(sizeof(char *) * 2);
-	if (!result_array)
-	{
-		free(quotes_removed_token);
-		return (NULL);
-	}
-	result_array[0] = quotes_removed_token;
-	result_array[1] = NULL;
-	return (result_array);
-}
-
-static void	free_str_array(char **array)
-{
-	int	i;
-
-	if (!array)
-		return ;
-	i = 0;
-	while (array[i])
-	{
-		free(array[i]);
-		i++;
-	}
-	free(array);
-}
 
 static int	expand_redirects(t_cmd *cmd, t_shell *shell)
 {
@@ -80,24 +41,52 @@ static int	expand_redirects(t_cmd *cmd, t_shell *shell)
 	return (0);
 }
 
+static char	**allocate_new_args(int arg_count)
+{
+	char	**new_args;
+
+	new_args = malloc(sizeof(char *) * (arg_count + 1));
+	return (new_args);
+}
+
+static int	process_args_loop(t_cmd *cmd, char **new_args, t_shell *shell)
+{
+	int	i;
+	int	j;
+
+	i = 0;
+	j = 0;
+	while (cmd->args[i])
+	{
+		if (process_single_arg(new_args, &j, cmd->args[i], shell) == -1)
+		{
+			cleanup_args_on_error(new_args, j);
+			return (-1);
+		}
+		free(cmd->args[i]);
+		i++;
+	}
+	new_args[j] = NULL;
+	return (0);
+}
+
 static int	expand_args(t_cmd *cmd, t_shell *shell)
 {
-	int		i;
-	char	**expanded;
+	char	**new_args;
+	int		arg_count;
 
 	if (!cmd->args)
 		return (0);
-	i = 0;
-	while (cmd->args[i])
-	{
-		expanded = perform_single_expansion(cmd->args[i], shell);
-		if (!expanded)
-			return (-1);
-		free(cmd->args[i]);
-		cmd->args[i] = expanded[0];
-		free(expanded);
-		i++;
-	}
+	arg_count = 0;
+	while (cmd->args[arg_count])
+		arg_count++;
+	new_args = allocate_new_args(arg_count);
+	if (!new_args)
+		return (-1);
+	if (process_args_loop(cmd, new_args, shell) == -1)
+		return (-1);
+	free(cmd->args);
+	cmd->args = new_args;
 	return (0);
 }
 

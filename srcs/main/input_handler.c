@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 22:50:09 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/24 12:18:37 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,14 @@ char	*read_input(void)
 {
 	char	*prompt;
 
-	prompt = readline("minishell> ");
+	if (isatty(STDIN_FILENO))
+		prompt = readline("minishell> ");
+	else
+		prompt = readline("");
 	if (!prompt)
 	{
-		printf("exit\n");
+		if (isatty(STDIN_FILENO))
+			printf("exit\n");
 		return (NULL);
 	}
 	return (prompt);

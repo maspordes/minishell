@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cd.c                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 00:46:46 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/19 20:32:02 by shutan           ###   ########.fr       */
+/*   Updated: 2025/05/24 12:12:43 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ int	ft_cd(char **args, t_env **env_list)
 	if (args[1] && args[2])
 	{
 		fprintf(stderr, "minishell: cd: too many arguments\n");
-		return (1);
+		return (0);
 	}
 	old_pwd_val = get_old_pwd(*env_list);
 	target_path = get_target_path(args, *env_list);
