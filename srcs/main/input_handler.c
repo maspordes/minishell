@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/24 12:18:37 by shutan           ###   ########.fr       */
+/*   Updated: 2025/06/04 16:53:29 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void	handle_sigint_prompt(void)
 	if (g_signal_status == 130)
 	{
 		g_signal_status = 0;
-		printf("\n");
+		printf("^C\n");
 		rl_on_new_line();
 		rl_redisplay();
 	}

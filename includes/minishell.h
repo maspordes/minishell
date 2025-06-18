@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:24:50 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/26 19:24:50 by shutan           ###   ########.fr       */
+/*   Updated: 2025/06/18 18:03:17 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,7 @@ void	handle_word(char *input, int *i, t_token **tokens);
 t_cmd	*parser(t_token *tokens);
 void	free_cmds(t_cmd *cmds);
 t_cmd	*new_cmd(void);
-t_redirect		*new_redirect(int type, char *file);
+t_redirect	*new_redirect(int type, char *file);
 void	add_redirect(t_cmd *cmd, t_redirect *redirect);
 int		handle_redirect(t_token **token, t_cmd *cmd);
 int		add_arg(t_cmd *cmd, char *arg);
@@ -194,12 +194,7 @@ void	print_export_env(t_env *env_list);
 char	*get_key_from_str(const char *str);
 
 /* readline 函数声明 - 条件编译 */
-# ifdef __linux__
-/* 在 Linux 上声明 readline 函数 */
-void	rl_replace_line(const char *text, int clear_undo);
-void	rl_redisplay(void);
-void	rl_on_new_line(void);
-# endif
+/* Note: readline functions are declared in readline/readline.h */
 
 /* Expansion module */
 int		expand_command(t_cmd *cmd, t_shell *shell);
@@ -220,5 +215,11 @@ int		process_single_arg(char **new_args, int *j, char *arg, t_shell *shell);
 /* Parser module */
 t_cmd	*parser(t_token *tokens);
 void	free_cmds(t_cmd *cmd_list);
+
+// expansion_helpers.c
+char	*handle_special_vars(char *str, int *i);
+char	*handle_normal_var(char *str, int *i, int start);
+char	*get_variable_value(char *key, t_env *env_list, int exit_status);
+int		skip_variable_name(char *str, int i);
 
 #endif

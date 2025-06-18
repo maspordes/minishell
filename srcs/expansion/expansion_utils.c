@@ -5,12 +5,33 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/30 17:40:43 by shutan           ###   ########.fr       */
+/*   Created: 2025/05/23 23:52:00 by shutan            #+#    #+#             */
+/*   Updated: 2025/06/18 18:06:32 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
+
+char	*process_variable(char *str, int *i, t_env *env_list, int exit_status)
+{
+	char	*key;
+	char	*value;
+	int		start;
+
+	(*i)++;
+	start = *i;
+	key = handle_special_vars(str, i);
+	if (!key)
+	{
+		if (ft_isalpha(str[*i]) || str[*i] == '_')
+			key = handle_normal_var(str, i, start);
+		else
+			return (ft_strdup("$"));
+	}
+	value = get_variable_value(key, env_list, exit_status);
+	free(key);
+	return (value ? value : ft_strdup(""));
+}
 
 char	**perform_single_expansion(char *token, t_shell *shell)
 {
@@ -46,59 +67,4 @@ int	process_single_arg(char **new_args, int *j, char *arg, t_shell *shell)
 	}
 	free(expanded);
 	return (0);
-}
-
-static char	*get_variable_value(char *key, t_env *env_list, int exit_status)
-{
-	char	*value;
-	char	*env_value;
-
-	if (ft_strcmp(key, "?") == 0)
-		value = ft_itoa(exit_status);
-	else
-	{
-		env_value = get_env_value(env_list, key);
-		if (env_value)
-			value = ft_strdup(env_value);
-		else
-			value = NULL;
-	}
-	return (value);
-}
-
-static int	skip_variable_name(char *str, int i)
-{
-	while (str[i] && (ft_isalnum(str[i]) || str[i] == '_'))
-		i++;
-	return (i);
-}
-
-char	*process_variable(char *str, int *i, t_env *env_list,
-	int exit_status)
-{
-	char	*key;
-	char	*value;
-	int		start;
-
-	(*i)++;
-	start = *i;
-	if (str[*i] == '?')
-	{
-		(*i)++;
-		key = ft_strdup("?");
-	}
-	else if (ft_isalpha(str[*i]) || str[*i] == '_')
-	{
-		*i = skip_variable_name(str, *i);
-		key = ft_substr(str, start, *i - start);
-	}
-	else
-	{
-		return (ft_strdup("$"));
-	}
-	value = get_variable_value(key, env_list, exit_status);
-	free(key);
-	if (!value)
-		return (ft_strdup(""));
-	return (value);
 }
