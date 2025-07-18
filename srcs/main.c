@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/18 16:07:21 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/18 16:07:23 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 18:56:27 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ static void	handle_input_loop(t_shell *shell)
 					{
 						process_input(shell);
 						clean_current_command(shell);
+						if (shell->should_exit)
+							break ;
 					}
 				}
 				if (!newline_pos)
@@ -84,6 +86,8 @@ static void	handle_input_loop(t_shell *shell)
 				add_history(shell->input);
 				process_input(shell);
 				clean_current_command(shell);
+				if (shell->should_exit)
+					break ;
 			}
 		}
 		else
@@ -105,6 +109,8 @@ int	main(int argc, char **argv, char **envp)
 	setup_readline();
 	handle_input_loop(shell);
 	last_status = shell->exit_status;
+	rl_clear_history();
+	rl_cleanup_after_signal();
 	restore_terminal_state();
 	free_shell(shell);
 	return (last_status);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   terminal_utils.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/18 16:07:30 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/18 16:07:27 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 18:42:46 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,4 +59,6 @@ void	restore_terminal_state(void)
 	{
 		tcsetattr(STDIN_FILENO, TCSANOW, &g_original_term);
 	}
+	rl_clear_history();
+	rl_cleanup_after_signal();
 }

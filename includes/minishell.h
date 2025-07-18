@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:24:50 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/18 16:09:27 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 18:43:39 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,7 @@ typedef struct s_shell
 	t_token	*tokens;
 	char	*input;
 	int		exit_status;
+	int		should_exit;
 }	t_shell;
 
 /* 执行器数据结构 */
@@ -128,8 +129,8 @@ void	free_cmds(t_cmd *cmds);
 t_cmd	*new_cmd(void);
 t_redirect	*new_redirect(int type, char *file);
 void	add_redirect(t_cmd *cmd, t_redirect *redirect);
-int		handle_redirect(t_token **token, t_cmd *cmd);
-int		add_arg(t_cmd *cmd, char *arg);
+int	handle_redirect(t_token **token, t_cmd *cmd);
+int	add_arg(t_cmd *cmd, char *arg);
 t_cmd	*handle_pipe(t_token **token, t_cmd *cmd);
 
 /* 执行器 */

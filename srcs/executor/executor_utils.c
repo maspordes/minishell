@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor_utils.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/18 16:05:14 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 18:43:54 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,11 +37,8 @@ static int	execute_single_builtin(t_cmd *cmd, t_env **env_list, t_shell *shell)
 		exit_status = exec_builtin(cmd, env_list, shell);
 		if (cmd->args[0] && ft_strcmp(cmd->args[0], "exit") == 0)
 		{
-			dup2(stdin_backup, STDIN_FILENO);
-			dup2(stdout_backup, STDOUT_FILENO);
-			close(stdin_backup);
-			close(stdout_backup);
-			exit(exit_status);
+			shell->should_exit = 1;
+			shell->exit_status = exit_status;
 		}
 	}
 	dup2(stdin_backup, STDIN_FILENO);

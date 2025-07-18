@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/18 16:05:14 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 18:39:29 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,15 +123,18 @@ static int	preprocess_all_heredocs(t_cmd *cmd_list)
 static void	execute_child_process(t_cmd *current, t_cmd *prev,
 		t_exec_data *data)
 {
+	int	exit_status;
+
 	setup_child_pipes(current, prev, data->cmd_list);
 	if (!setup_redirections(current->redirects))
 		exit(1);
 	if (current->args && current->args[0])
 	{
 		if (is_builtin(current->args[0]))
-			exit(exec_builtin(current, data->env_list, data->shell));
+			exit_status = exec_builtin(current, data->env_list, data->shell);
 		else
-			exit(execute_external_cmd(current, *(data->env_list)));
+			exit_status = execute_external_cmd(current, *(data->env_list));
+		exit(exit_status);
 	}
 	exit(0);
 }
@@ -151,7 +154,10 @@ static int	fork_and_execute(t_exec_data *data, pid_t *pids)
 		if (pids[i] == 0)
 			execute_child_process(current, prev, data);
 		else if (pids[i] < 0)
-			return (perror("fork"), 1);
+		{
+			perror("fork");
+			return (1);
+		}
 		if (prev && prev->pipe_fd[0] != -1)
 			close(prev->pipe_fd[0]);
 		if (prev && prev->pipe_fd[1] != -1)

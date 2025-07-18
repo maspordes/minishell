@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main_utils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 22:50:05 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 18:43:46 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ t_shell	*init_shell(char **envp)
 	shell->tokens = NULL;
 	shell->input = NULL;
 	shell->exit_status = 0;
+	shell->should_exit = 0;
 	return (shell);
 }
 
@@ -52,6 +53,9 @@ void	free_shell(t_shell *shell)
 		return ;
 	clean_current_command(shell);
 	if (shell->env_list)
+	{
 		free_env(shell->env_list);
+		shell->env_list = NULL;
+	}
 	free(shell);
 }
