@@ -1,3 +1,6 @@
 ./minishell_tester
 minishell_tester/
 *.sh
+*.yml
+.DS_Store
+LINUX_TESTING.md

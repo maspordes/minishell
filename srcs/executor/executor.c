@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/24 12:12:27 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/17 19:01:39 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,102 @@ int		execute_external_cmd(t_cmd *cmd, t_env *env_list);
 int		is_parent_builtin(const char *cmd_name);
 void	setup_child_pipes(t_cmd *current, t_cmd *prev, t_cmd *cmd_list);
 int		wait_for_children(pid_t *pids, int num_cmds);
+
+static int	preprocess_heredoc(t_redirect *redirect)
+{
+	int		fd;
+	char	*temp_file;
+	int		temp_fd;
+	char	buffer[1024];
+	ssize_t	bytes_read;
+
+	fd = handle_heredoc(redirect->file);
+	if (fd == -1)
+		return (-1);
+	temp_file = ft_strdup("/tmp/heredoc_XXXXXX");
+	if (!temp_file)
+	{
+		close(fd);
+		return (-1);
+	}
+	temp_fd = mkstemp(temp_file);
+	if (temp_fd == -1)
+	{
+		close(fd);
+		free(temp_file);
+		return (-1);
+	}
+	while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0)
+	{
+		if (write(temp_fd, buffer, bytes_read) != bytes_read)
+		{
+			close(fd);
+			close(temp_fd);
+			unlink(temp_file);
+			free(temp_file);
+			return (-1);
+		}
+	}
+	close(fd);
+	close(temp_fd);
+	free(redirect->file);
+	redirect->file = temp_file;
+	redirect->type = T_REDIR_IN;
+	return (0);
+}
+
+static void	cleanup_temp_files(t_cmd *cmd_list)
+{
+	t_cmd		*current;
+	t_redirect	*redirect;
+
+	current = cmd_list;
+	while (current)
+	{
+		redirect = current->redirects;
+		while (redirect)
+		{
+			if (redirect->type == T_REDIR_IN && redirect->file
+				&& ft_strncmp(redirect->file, "/tmp/heredoc_", 13) == 0)
+			{
+				unlink(redirect->file);
+			}
+			redirect = redirect->next;
+		}
+		current = current->next;
+	}
+}
+
+static int	preprocess_heredocs_in_cmd(t_cmd *cmd)
+{
+	t_redirect	*redirect;
+
+	redirect = cmd->redirects;
+	while (redirect)
+	{
+		if (redirect->type == T_HEREDOC)
+		{
+			if (preprocess_heredoc(redirect) == -1)
+				return (-1);
+		}
+		redirect = redirect->next;
+	}
+	return (0);
+}
+
+static int	preprocess_all_heredocs(t_cmd *cmd_list)
+{
+	t_cmd	*current;
+
+	current = cmd_list;
+	while (current)
+	{
+		if (preprocess_heredocs_in_cmd(current) == -1)
+			return (-1);
+		current = current->next;
+	}
+	return (0);
+}
 
 static void	execute_child_process(t_cmd *current, t_cmd *prev,
 		t_exec_data *data)
@@ -70,18 +166,29 @@ static int	execute_cmd_pipeline(t_cmd *cmd_list, t_env **env_list,
 	pid_t		*pids;
 	int			num_cmds;
 	t_exec_data	data;
+	int			result;
 
+	if (preprocess_all_heredocs(cmd_list) == -1)
+		return (1);
 	data.cmd_list = cmd_list;
 	data.env_list = env_list;
 	data.shell = shell;
 	num_cmds = count_commands(cmd_list);
 	pids = malloc(sizeof(pid_t) * num_cmds);
 	if (!pids || (num_cmds > 1 && !create_pipes(cmd_list)))
+	{
+		cleanup_temp_files(cmd_list);
 		return (1);
+	}
 	if (fork_and_execute(&data, pids) != 0)
+	{
+		cleanup_temp_files(cmd_list);
 		return (1);
+	}
 	close_all_pipes(cmd_list);
-	return (wait_for_children(pids, num_cmds));
+	result = wait_for_children(pids, num_cmds);
+	cleanup_temp_files(cmd_list);
+	return (result);
 }
 
 int	executor(t_cmd *cmd_list, t_env **env_list, t_shell *shell)

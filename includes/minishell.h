@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:24:50 by shutan            #+#    #+#             */
-/*   Updated: 2025/06/18 18:03:17 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/17 18:41:14 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,6 +184,7 @@ t_shell	*init_shell(char **envp);
 void	clean_current_command(t_shell *shell);
 void	free_shell(t_shell *shell);
 void	setup_readline(void);
+void	restore_terminal_state(void);
 void	handle_sigint_prompt(void);
 char	*read_input(void);
 int		execute_pipeline(t_shell *shell);

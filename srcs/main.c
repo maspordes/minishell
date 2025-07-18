@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/06/11 17:42:27 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/17 23:38:35 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ static void	handle_input_loop(t_shell *shell)
 
 	while (1)
 	{
-		handle_sigint_prompt();
+		// handle_sigint_prompt();
 		current_input = read_input();
 		if (!current_input)
 			break ;
@@ -55,7 +55,12 @@ int	main(int argc, char **argv, char **envp)
 	setup_signals();
 	setup_readline();
 	handle_input_loop(shell);
-	last_status = shell->exit_status;
+	printf("%i\n", g_signal_status);
+	if (g_signal_status == 130) 
+		shell->exit_status = 130;
+	else
+		last_status = shell->exit_status;
+	restore_terminal_state();
 	free_shell(shell);
 	return (last_status);
 }

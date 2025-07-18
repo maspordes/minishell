@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 22:58:00 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/17 19:01:39 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,11 @@ int	handle_heredoc_redirect(char *delimiter)
 	fd = handle_heredoc(delimiter);
 	if (fd == -1)
 		return (0);
-	dup2(fd, STDIN_FILENO);
+	if (dup2(fd, STDIN_FILENO) == -1)
+	{
+		close(fd);
+		return (0);
+	}
 	close(fd);
 	return (1);
 }
