@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pwd.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 00:54:35 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 21:53:45 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 16:02:01 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,7 @@
 int	ft_pwd(void)
 {
 	char	cwd[PATH_MAX];
-	char	*pwd_env;
 
-	pwd_env = getenv("PWD");
-	if (pwd_env)
-	{
-		printf("%s\n", pwd_env);
-		return (0);
-	}
 	if (getcwd(cwd, sizeof(cwd)) != NULL)
 	{
 		printf("%s\n", cwd);

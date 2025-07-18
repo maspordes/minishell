@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 00:54:45 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/19 20:56:45 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 16:05:14 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,8 @@ static int	handle_export_arg(char *arg, t_env **env_list)
 	}
 	if (!is_valid_identifier(key))
 	{
-		fprintf(stderr, "not a valid identifier\n");
+		fprintf(stderr, "minishell: export: `%s': not a valid identifier\n",
+			key);
 		free(key);
 		return (1);
 	}

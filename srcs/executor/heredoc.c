@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   heredoc.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 14:30:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/17 19:43:18 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 16:05:20 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,6 @@ static char	*read_heredoc_line(void)
 	char	buffer[1024];
 	ssize_t	bytes_read;
 	int		status;
-	char	*line;
-	int		i;
 
 	if (g_heredoc_interrupted)
 		return (NULL);
@@ -104,11 +102,10 @@ static char	*read_heredoc_line(void)
 	if (bytes_read <= 0)
 		return (NULL);
 	buffer[bytes_read] = '\0';
-	i = bytes_read - 1;
-	while (i >= 0 && (buffer[i] == '\n' || buffer[i] == '\r'))
-		buffer[i--] = '\0';
-	line = ft_strdup(buffer);
-	return (line);
+	while (bytes_read > 0 && (buffer[bytes_read - 1] == '\n'
+			|| buffer[bytes_read - 1] == '\r'))
+		buffer[--bytes_read] = '\0';
+	return (ft_strdup(buffer));
 }
 
 int	handle_heredoc(char *delimiter)

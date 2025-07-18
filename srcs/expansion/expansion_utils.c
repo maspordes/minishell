@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expansion_utils.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 23:52:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/06/18 18:06:32 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 16:05:14 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,9 @@ char	*process_variable(char *str, int *i, t_env *env_list, int exit_status)
 	}
 	value = get_variable_value(key, env_list, exit_status);
 	free(key);
-	return (value ? value : ft_strdup(""));
+	if (value)
+		return (value);
+	return (ft_strdup(""));
 }
 
 char	**perform_single_expansion(char *token, t_shell *shell)

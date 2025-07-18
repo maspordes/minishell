@@ -4,3 +4,7 @@ minishell_tester/
 *.yml
 .DS_Store
 LINUX_TESTING.md
+.n*
+*.txt
+*.md
+0

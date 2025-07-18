@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/01/01 00:00:00 by user              #+#    #+#             */
-/*   Updated: 2025/07/17 23:38:35 by shutan           ###   ########.fr       */
+/*   Created: 2025/07/18 16:07:21 by shutan            #+#    #+#             */
+/*   Updated: 2025/07/18 16:07:23 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,62 @@ int	g_signal_status = 0;
 static void	handle_input_loop(t_shell *shell)
 {
 	char	*current_input;
+	char	buffer[4096];
+	ssize_t	bytes_read;
+	char	*input_copy;
+	char	*line;
+	char	*newline_pos;
+	char	*exit_str;
 
+	if (!isatty(STDIN_FILENO))
+	{
+		bytes_read = read(STDIN_FILENO, buffer, sizeof(buffer) - 1);
+		if (bytes_read > 0)
+		{
+			buffer[bytes_read] = '\0';
+			input_copy = ft_strdup(buffer);
+			if (!input_copy)
+				return ;
+			line = input_copy;
+			while (line && *line)
+			{
+				newline_pos = ft_strchr(line, '\n');
+				if (newline_pos)
+				{
+					*newline_pos = '\0';
+					newline_pos++;
+				}
+				if (ft_strlen(line) > 0)
+				{
+					shell->input = ft_strdup(line);
+					if (shell->input)
+					{
+						process_input(shell);
+						clean_current_command(shell);
+					}
+				}
+				if (!newline_pos)
+					break ;
+				line = newline_pos;
+			}
+			free(input_copy);
+		}
+		return ;
+	}
 	while (1)
 	{
-		// handle_sigint_prompt();
 		current_input = read_input();
+		if (g_signal_status == 130)
+		{
+			shell->exit_status = 130;
+			exit_str = ft_itoa(130);
+			if (exit_str)
+			{
+				set_env_value(&(shell->env_list), "?", exit_str);
+				free(exit_str);
+			}
+			g_signal_status = 0;
+		}
 		if (!current_input)
 			break ;
 		if (current_input[0] != '\0')
@@ -36,9 +87,7 @@ static void	handle_input_loop(t_shell *shell)
 			}
 		}
 		else
-		{
 			free(current_input);
-		}
 	}
 }
 
@@ -55,11 +104,7 @@ int	main(int argc, char **argv, char **envp)
 	setup_signals();
 	setup_readline();
 	handle_input_loop(shell);
-	printf("%i\n", g_signal_status);
-	if (g_signal_status == 130) 
-		shell->exit_status = 130;
-	else
-		last_status = shell->exit_status;
+	last_status = shell->exit_status;
 	restore_terminal_state();
 	free_shell(shell);
 	return (last_status);

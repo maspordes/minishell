@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exit.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 00:54:57 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/24 12:23:08 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 15:58:06 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,14 +18,15 @@ int	ft_exit(char **args, t_shell *shell)
 	long	exit_code;
 	int		result;
 
+	(void)shell;
 	if (shell->cmd_list && !shell->cmd_list->next)
 		printf("exit\n");
 	result = handle_exit_args(args, &exit_code);
 	if (result == 1)
 		return (1);
 	if (result == 255)
-		exit(255);
-	exit(exit_code);
+		return (255);
+	return ((int)exit_code);
 }
 
 char	*clean_quoted_str(const char *str)

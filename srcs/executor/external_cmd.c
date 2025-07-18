@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   external_cmd.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 22:49:59 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 15:54:14 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,12 +26,19 @@ static char	*check_absolute_path(char *cmd)
 static char	*search_in_path(char *cmd, char **paths)
 {
 	char	*cmd_path;
+	char	*temp_path;
 	int		i;
 
 	i = 0;
 	while (paths[i])
 	{
-		cmd_path = ft_strjoin(ft_strjoin(paths[i], "/"), cmd);
+		temp_path = ft_strjoin(paths[i], "/");
+		if (!temp_path)
+			return (NULL);
+		cmd_path = ft_strjoin(temp_path, cmd);
+		free(temp_path);
+		if (!cmd_path)
+			return (NULL);
 		if (access(cmd_path, X_OK) == 0)
 		{
 			free_array(paths);

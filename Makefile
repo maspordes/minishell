@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+         #
+#    By: shutan <shutan@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/01 00:00:00 by user              #+#    #+#              #
-#    Updated: 2025/05/24 12:37:10 by shutan           ###   ########.fr        #
+#    Updated: 2025/07/18 16:14:15 by shutan           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -30,6 +30,7 @@ SRCS_PATH = ./srcs
 SRCS = $(SRCS_PATH)/main.c \
        $(SRCS_PATH)/main/main_utils.c \
        $(SRCS_PATH)/main/input_handler.c \
+       $(SRCS_PATH)/main/terminal_utils.c \
        $(SRCS_PATH)/main/command_processor.c \
        $(SRCS_PATH)/lexer/lexer.c \
        $(SRCS_PATH)/lexer/lexer_utils.c \
@@ -44,6 +45,7 @@ SRCS = $(SRCS_PATH)/main.c \
        $(SRCS_PATH)/expansion/quote_removal.c \
        $(SRCS_PATH)/expansion/expansion_utils.c \
        $(SRCS_PATH)/expansion/expansion_helpers.c \
+       $(SRCS_PATH)/expansion/expansion_vars.c \
        $(SRCS_PATH)/expansion/expansion_memory.c \
        $(SRCS_PATH)/executor/executor.c \
        $(SRCS_PATH)/executor/executor_utils.c \
@@ -93,6 +95,7 @@ $(LIBFT):
 
 clean:
 	$(RM) $(OBJS)
+	find $(SRCS_PATH) -name "*.o" -delete
 	make -C $(LIBFT_PATH) clean
 
 fclean: clean

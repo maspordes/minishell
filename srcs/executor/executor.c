@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   executor.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/17 19:01:39 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 16:05:14 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,11 @@ static int	preprocess_heredoc(t_redirect *redirect)
 		free(temp_file);
 		return (-1);
 	}
-	while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0)
+	while (1)
 	{
+		bytes_read = read(fd, buffer, sizeof(buffer));
+		if (bytes_read <= 0)
+			break ;
 		if (write(temp_fd, buffer, bytes_read) != bytes_read)
 		{
 			close(fd);
@@ -178,16 +181,20 @@ static int	execute_cmd_pipeline(t_cmd *cmd_list, t_env **env_list,
 	if (!pids || (num_cmds > 1 && !create_pipes(cmd_list)))
 	{
 		cleanup_temp_files(cmd_list);
+		if (pids)
+			free(pids);
 		return (1);
 	}
 	if (fork_and_execute(&data, pids) != 0)
 	{
 		cleanup_temp_files(cmd_list);
+		free(pids);
 		return (1);
 	}
 	close_all_pipes(cmd_list);
 	result = wait_for_children(pids, num_cmds);
 	cleanup_temp_files(cmd_list);
+	free(pids);
 	return (result);
 }
 

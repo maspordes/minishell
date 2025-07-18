@@ -6,7 +6,7 @@
 /*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/01 00:00:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/19 21:01:30 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/18 14:43:04 by shutan           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ int	ft_unset(char **args, t_env **env_list)
 			remove_env(env_list, args[i]);
 		else
 		{
-			printf("unset: '%s': not a valid identifier\n", args[i]);
+			fprintf(stderr, "unset: '%s': not a valid identifier\n", args[i]);
 			ret = 1;
 		}
 		i++;
