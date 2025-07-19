@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   env_operations.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 21:05:25 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/19 21:06:54 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/19 17:33:57 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,7 @@ char	*get_env_value(t_env *env_list, const char *key)
 void	set_env_value(t_env **env_list, char *key, char *value)
 {
 	t_env	*current;
+	t_env	*new_node;
 
 	current = *env_list;
 	while (current)
@@ -101,5 +102,15 @@ void	set_env_value(t_env **env_list, char *key, char *value)
 		}
 		current = current->next;
 	}
-	add_env(env_list, new_env(key, value));
+	// Create new node manually to avoid double allocation
+	new_node = malloc(sizeof(t_env));
+	if (!new_node)
+		return ;
+	new_node->key = ft_strdup(key);
+	if (value)
+		new_node->value = ft_strdup(value);
+	else
+		new_node->value = NULL;
+	new_node->next = *env_list;
+	*env_list = new_node;
 }

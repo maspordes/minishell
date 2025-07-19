@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   terminal_utils.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/18 16:07:30 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/18 18:42:46 by marrey           ###   ########.fr       */
+/*   Updated: 2025/07/19 17:50:16 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ void	setup_readline(void)
 {
 	if (setup_terminal_for_readline() == -1)
 		return ;
-	rl_catch_signals = 0;
 }
 
 void	restore_terminal_state(void)
@@ -59,6 +58,4 @@ void	restore_terminal_state(void)
 	{
 		tcsetattr(STDIN_FILENO, TCSANOW, &g_original_term);
 	}
-	rl_clear_history();
-	rl_cleanup_after_signal();
 }

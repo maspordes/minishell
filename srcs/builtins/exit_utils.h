@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   exit_utils.h                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 20:37:15 by shutan            #+#    #+#             */
 /*   Updated: 2025/05/19 20:38:01 by shutan           ###   ########.fr       */

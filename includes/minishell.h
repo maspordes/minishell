@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:24:50 by shutan            #+#    #+#             */
 /*   Updated: 2025/07/18 18:43:39 by marrey           ###   ########.fr       */

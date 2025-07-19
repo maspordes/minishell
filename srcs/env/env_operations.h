@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   env_operations.h                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 21:05:25 by shutan            #+#    #+#             */
 /*   Updated: 2025/05/19 21:07:08 by shutan           ###   ########.fr       */

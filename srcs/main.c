@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/18 16:07:21 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/18 18:56:27 by marrey           ###   ########.fr       */
+/*   Updated: 2025/07/19 17:56:00 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,22 +76,33 @@ static void	handle_input_loop(t_shell *shell)
 			g_signal_status = 0;
 		}
 		if (!current_input)
+		{
+			if (isatty(STDIN_FILENO))
+				write(STDOUT_FILENO, "exit\n", 5);
 			break ;
+		}
 		if (current_input[0] != '\0')
 		{
 			shell->input = ft_strdup(current_input);
 			free(current_input);
 			if (shell->input)
 			{
-				add_history(shell->input);
 				process_input(shell);
 				clean_current_command(shell);
 				if (shell->should_exit)
+				{
 					break ;
+				}
 			}
 		}
 		else
 			free(current_input);
+	}
+	// Clean up any remaining input
+	if (shell->input)
+	{
+		free(shell->input);
+		shell->input = NULL;
 	}
 }
 

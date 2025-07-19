@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   cd_utils.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/19 20:31:27 by shutan            #+#    #+#             */
 /*   Updated: 2025/05/19 20:32:02 by shutan           ###   ########.fr       */

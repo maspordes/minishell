@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   expansion_memory.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/05/24 12:35:00 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/24 12:37:59 by shutan           ###   ########.fr       */
+/*   Created: 2025/05/24 12:41:27 by shutan            #+#    #+#             */
+/*   Updated: 2025/07/19 17:34:01 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,14 +63,25 @@ void	cleanup_args_on_error(char **new_args, int j)
 char	*expand_variables(char *str, t_env *env_list, int exit_status)
 {
 	char			*expanded;
+	char			*result;
 	t_expand_data	data;
 	t_expand_state	state;
 
+	if (!str)
+		return (NULL);
 	data.env_list = env_list;
 	data.exit_status = exit_status;
 	state.i = 0;
 	state.in_single_quote = 0;
 	state.in_double_quote = 0;
 	expanded = ft_strdup("");
-	return (process_expansion_loop(str, expanded, &data, &state));
+	if (!expanded)
+		return (NULL);
+	result = process_expansion_loop(str, expanded, &data, &state);
+	if (!result)
+	{
+		free(expanded);
+		return (NULL);
+	}
+	return (result);
 }

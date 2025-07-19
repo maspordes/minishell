@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   expansion_vars.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>              +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/18 16:05:30 by shutan            #+#    #+#             */
 /*   Updated: 2025/07/18 16:05:35 by shutan           ###   ########.fr       */

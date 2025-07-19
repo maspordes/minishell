@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   print_ptr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42.fr>        +#+  +:+       +#+        */
+/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/13 16:44:08 by shutan         #+#    #+#             */
 /*   Updated: 2025/02/13 16:44:16 by shutan        ###   ########.fr       */
