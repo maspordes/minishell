@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marrey <marrey@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/26 19:24:50 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/18 18:43:39 by marrey           ###   ########.fr       */
+/*   Updated: 2025/07/19 22:11:18 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,10 @@
 # include <dirent.h>
 # include <termios.h>
 
-/* 信号处理的全局变量 */
+/* Global variable for signal handling */
 extern int	g_signal_status;
 
-/* 标记类型枚举 */
+/* Token type enumeration */
 typedef enum e_token_type
 {
 	T_WORD,
@@ -46,7 +46,7 @@ typedef enum e_token_type
 	T_RPAREN
 }	t_token_type;
 
-/* 标记结构 */
+/* Token structure */
 typedef struct s_token
 {
 	char			*value;
@@ -54,7 +54,7 @@ typedef struct s_token
 	struct s_token	*next;
 }	t_token;
 
-/* 命令重定向结构 */
+/* Command redirection structure */
 typedef struct s_redirect
 {
 	int					type;
@@ -62,7 +62,7 @@ typedef struct s_redirect
 	struct s_redirect	*next;
 }	t_redirect;
 
-/* 命令结构 */
+/* Command structure */
 typedef struct s_cmd
 {
 	char			**args;
@@ -71,7 +71,7 @@ typedef struct s_cmd
 	int				pipe_fd[2];
 }	t_cmd;
 
-/* 环境变量结构 */
+/* Environment variable structure */
 typedef struct s_env
 {
 	char			*key;
@@ -79,7 +79,7 @@ typedef struct s_env
 	struct s_env	*next;
 }	t_env;
 
-/* 主要shell结构 */
+/* Main shell structure */
 typedef struct s_shell
 {
 	t_env	*env_list;
@@ -90,7 +90,7 @@ typedef struct s_shell
 	int		should_exit;
 }	t_shell;
 
-/* 执行器数据结构 */
+/* Executor data structure */
 typedef struct s_exec_data
 {
 	t_cmd	*cmd_list;
@@ -98,14 +98,14 @@ typedef struct s_exec_data
 	t_shell	*shell;
 }	t_exec_data;
 
-/* 扩展数据结构 */
+/* Expansion data structure */
 typedef struct s_expand_data
 {
 	t_env	*env_list;
 	int		exit_status;
 }	t_expand_data;
 
-/* 扩展状态结构 */
+/* Expansion state structure */
 typedef struct s_expand_state
 {
 	int	i;
@@ -113,17 +113,17 @@ typedef struct s_expand_state
 	int	in_double_quote;
 }	t_expand_state;
 
-/* 函数原型 */
+/* Function prototypes */
 
-/* 词法分析器 */
+/* Lexer */
 t_token	*lexer(char *input);
 void	free_tokens(t_token *tokens);
 t_token	*new_token(char *value, t_token_type type);
 void	add_token(t_token **tokens, t_token *new_token);
-int		handle_special_char(char *input, int *i, t_token **tokens);
+int	handle_special_char(char *input, int *i, t_token **tokens);
 void	handle_word(char *input, int *i, t_token **tokens);
 
-/* 语法分析器 */
+/* Parser */
 t_cmd	*parser(t_token *tokens);
 void	free_cmds(t_cmd *cmds);
 t_cmd	*new_cmd(void);
@@ -133,7 +133,7 @@ int	handle_redirect(t_token **token, t_cmd *cmd);
 int	add_arg(t_cmd *cmd, char *arg);
 t_cmd	*handle_pipe(t_token **token, t_cmd *cmd);
 
-/* 执行器 */
+/* Executor */
 int		executor(t_cmd *cmd_list, t_env **env_list, t_shell *shell);
 char	*find_executable(char *cmd, t_env *env_list);
 void	free_array(char **array);
@@ -148,7 +148,7 @@ int		handle_output_redirect(char *filename);
 int		handle_append_redirect(char *filename);
 int		handle_heredoc_redirect(char *delimiter);
 
-/* 内置命令 */
+/* Built-in commands */
 int		ft_echo(char **args, t_env *env_list);
 int		ft_cd(char **args, t_env **env_list);
 int		ft_pwd(void);
@@ -157,7 +157,7 @@ int		ft_unset(char **args, t_env **env_list);
 int		ft_env(t_env *env_list);
 int		ft_exit(char **args, t_shell *shell);
 
-/* 环境变量 */
+/* Environment variables */
 t_env	*init_env(char **envp);
 char	*get_env_value(t_env *env_list, const char *key);
 void	set_env_value(t_env **env_list, char *key, char *value);
@@ -165,17 +165,18 @@ void	free_env(t_env *env_list);
 char	**env_to_array(t_env *env_list);
 void	add_or_update_env(t_env **env_list, const char *arg);
 
-/* 信号处理 */
+/* Signal handling */
 void	setup_signals(void);
 void	reset_signals(void);
 
-/* 工具函数 */
+/* Utility functions */
 int		is_builtin(char *cmd);
 int		exec_builtin(t_cmd *cmd, t_env **env_list, t_shell *shell);
 char	*expand_variables(char *str, t_env *env_list, int exit_status);
 char	*ft_strjoin_char(char *s1, char c);
 char	*ft_strjoin_free(char *s1, const char *s2);
 void	print_error(const char *prefix, const char *arg, const char *message);
+int		validate_quotes(const char *input);
 
 /* Filename Utils */
 char	*process_filename_quotes(const char *raw_filename);
@@ -195,7 +196,6 @@ int		process_input(t_shell *shell);
 void	print_export_env(t_env *env_list);
 char	*get_key_from_str(const char *str);
 
-/* readline 函数声明 - 条件编译 */
 /* Note: readline functions are declared in readline/readline.h */
 
 /* Expansion module */
@@ -218,7 +218,7 @@ int		process_single_arg(char **new_args, int *j, char *arg, t_shell *shell);
 t_cmd	*parser(t_token *tokens);
 void	free_cmds(t_cmd *cmd_list);
 
-// expansion_helpers.c
+/* expansion_helpers.c */
 char	*handle_special_vars(char *str, int *i);
 char	*handle_normal_var(char *str, int *i, int start);
 char	*get_variable_value(char *key, t_env *env_list, int exit_status);

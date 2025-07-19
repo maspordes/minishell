@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   string_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 14:42:18 by shutan            #+#    #+#             */
-/*   Updated: 2025/05/23 22:48:29 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/19 22:05:29 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,4 +39,31 @@ char	*ft_strjoin_char(char *s1, char c)
 	result[len + 1] = '\0';
 	free(s1);
 	return (result);
+}
+
+int	validate_quotes(const char *input)
+{
+	int		i;
+	int		in_single_quote;
+	int		in_double_quote;
+
+	if (!input)
+		return (1);
+	i = 0;
+	in_single_quote = 0;
+	in_double_quote = 0;
+	while (input[i])
+	{
+		if (input[i] == '\'' && !in_double_quote)
+			in_single_quote = !in_single_quote;
+		else if (input[i] == '"' && !in_single_quote)
+			in_double_quote = !in_double_quote;
+		i++;
+	}
+	if (in_single_quote || in_double_quote)
+	{
+		ft_putstr_fd("minishell: syntax error: unclosed quotes\n", 2);
+		return (0);
+	}
+	return (1);
 }

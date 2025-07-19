@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   signals.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/18 10:48:33 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/18 14:25:51 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/19 18:47:12 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,8 @@ static void	handle_sigint(int sig)
 {
 	(void)sig;
 	g_signal_status = 130;
-	write(STDOUT_FILENO, "\n", 1);
-	rl_replace_line("", 0);
-	rl_on_new_line();
-	rl_redisplay();
+	if (isatty(STDIN_FILENO))
+		write(STDOUT_FILENO, "\n", 1);
 }
 
 static void	handle_sigquit(int sig)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exit.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 00:54:57 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/18 15:58:06 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/19 19:50:46 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,6 @@ int	ft_exit(char **args, t_shell *shell)
 	int		result;
 
 	(void)shell;
-	if (shell->cmd_list && !shell->cmd_list->next)
-		printf("exit\n");
 	result = handle_exit_args(args, &exit_code);
 	if (result == 1)
 		return (1);

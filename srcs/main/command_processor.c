@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command_processor.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: shutan <shutan@student.42berlin.de>        +#+  +:+       +#+        */
+/*   By: marrey <marrey@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/23 14:42:18 by shutan            #+#    #+#             */
-/*   Updated: 2025/07/17 18:47:42 by shutan           ###   ########.fr       */
+/*   Updated: 2025/07/19 22:05:45 by marrey           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,11 @@ int	process_input(t_shell *shell)
 {
 	if (!shell->input || shell->input[0] == '\0')
 		return (0);
+	if (!validate_quotes(shell->input))
+	{
+		shell->exit_status = 2;
+		return (2);
+	}
 	shell->tokens = lexer(shell->input);
 	if (!shell->tokens)
 		return (0);

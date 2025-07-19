@@ -24,6 +24,11 @@
 # include <stdio.h>
 # include "ft_printf.h"
 
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 1024
+# endif
+
+char				*get_next_line(int fd);
 size_t				ft_strlen(const char *s);
 int					ft_isalpha(int c);
 int					ft_isdigit(int c);
